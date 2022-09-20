@@ -23,6 +23,8 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     private final Configuration<Boolean> tpsSync;
     private final Configuration<Boolean> capAt20;
     private final Configuration<DoubleRange> multiplier;
+    private final Configuration<Boolean> jumpLimit;
+    private final Configuration<Boolean> shiftLimit;
     private boolean suffix;
     private boolean sneakedFlag;
     private boolean jumpedFlag;
@@ -31,7 +33,9 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
         tpsSync = provider.get("tps_sync", "Tps sync", null, Boolean.class, false);
         capAt20 = provider.get("cap_at_20", "Cap at 20", null, Boolean.class, true,
                 tpsSync::getValue, false, 0);
-        multiplier = provider.get("multiplier", "Multiplier", null, DoubleRange.class, new DoubleRange(1, 5, 0.1, 0.1, 1));
+        multiplier = provider.get("multiplier", "Multiplier", null, DoubleRange.class, new DoubleRange(0.5, 5, 0.1, 0.1, 1));
+        jumpLimit = provider.get("jump_limit", "Jump limit", null, Boolean.class, true);
+        shiftLimit = provider.get("shift_limit", "Shift limit", null, Boolean.class, true);
     }
 
     private boolean paused = false;
@@ -56,14 +60,16 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
         if (EntityUtils.isInsideBlock(getPlayer()) && PlayerUtils.isPlayerInClip()) {
             speedModulePauseManager(true);
 
-            suffix = true;
-            if (sneakedFlag && !getPlayer().isSneaking())
-                sneakedFlag = false;
-            if (jumpedFlag && getPlayer().motionY <= 0)
-                jumpedFlag = false;
-
             EntityPlayerSP player = getPlayer();
             if (player.isElytraFlying()) return;
+            Vec3d inputs = MovementUtils.getMoveInputs(player).normalize();
+            // chatLog("Input X:" + inputs.x + " Y:" + inputs.y + " Z:" + inputs.z);
+            suffix = true;
+            if (shiftLimit.getValue() && sneakedFlag && !getPlayer().isSneaking())
+                sneakedFlag = false;
+            if (jumpLimit.getValue() && jumpedFlag && inputs.y == 0)
+                jumpedFlag = false;
+
 
             player.motionX = 0;
             player.motionY = 0;
@@ -72,9 +78,6 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
             player.noClip = EntityUtils.isInsideBlock(getPlayer());
             player.fallDistance = 0;
             player.onGround = false;
-
-            Vec3d inputs = MovementUtils.getMoveInputs(player).normalize();
-            // chatLog("Input X:" + inputs.x + " Y:" + inputs.y + " Z:" + inputs.z);
 
             double x = inputs.x;
             double z = inputs.z;
