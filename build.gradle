@@ -1,0 +1,88 @@
+buildscript {
+    repositories {
+        maven { url = 'https://plugins.gradle.org/m2/' }
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
+
+archivesBaseName = 'sushi'
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+minecraft {
+    mappings channel: 'stable', version: '39-1.12'
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'fml.coreMods.load', 'net.sushiclient.client.MixinLoaderForge'
+            property 'mixin.env.disableRefMap', 'true'
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+        }
+    }
+}
+
+configurations {
+    included
+}
+
+repositories {
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    mavenCentral()
+}
+
+dependencies {
+    // Mixin
+    included('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+        exclude module: 'gson'
+        exclude module: 'guava'
+        exclude module: 'commons-io'
+        exclude module: 'launchwrapper'
+        exclude module: 'log4j-core'
+    }
+    annotationProcessor('org.spongepowered:mixin:0.8.2:processor') { exclude module: 'gson' }
+
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2854'
+    implementation configurations.included
+}
+
+mixin {
+    defaultObfuscationEnv 'searge'
+    add sourceSets.main, 'mixins.sushi.refmap.json'
+}
+
+jar {
+    manifest.attributes(
+            'Manifest-Version': 1.0,
+            'MixinConfigs': 'mixins.sushi.json',
+            'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+            'TweakOrder': 0,
+            'FMLCorePluginContainsFMLMod': 'true',
+            'FMLCorePlugin': 'net.sushiclient.client.MixinLoaderForge',
+            'ForceLoadAsMod': 'true'
+    )
+    from {
+        configurations.included.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    exclude 'META-INF/MUMFREY.RSA'
+    exclude 'META-INF/MUMFREY.SF'
+    exclude 'LICENSE.txt'
+}
+
+sourceSets {
+    sourceSets -> main
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
