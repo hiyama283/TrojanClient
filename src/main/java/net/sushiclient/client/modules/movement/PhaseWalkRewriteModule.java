@@ -25,6 +25,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     private final Configuration<DoubleRange> multiplier;
     private final Configuration<Boolean> jumpLimit;
     private final Configuration<Boolean> shiftLimit;
+    private final Configuration<Boolean> voidSafe;
     private boolean suffix;
     private boolean sneakedFlag;
     private boolean jumpedFlag;
@@ -36,6 +37,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
         multiplier = provider.get("multiplier", "Multiplier", null, DoubleRange.class, new DoubleRange(0.5, 5, 0.1, 0.1, 1));
         jumpLimit = provider.get("jump_limit", "Jump limit", null, Boolean.class, true);
         shiftLimit = provider.get("shift_limit", "Shift limit", null, Boolean.class, true);
+        voidSafe = provider.get("void_safe", "Void safe", null, Boolean.class, true);
     }
 
     private boolean paused = false;
@@ -102,6 +104,8 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
             player.motionZ = vec.y;
 
             if (player.isSneaking() && !sneakedFlag) {
+                if (voidSafe.getValue() && ((int) player.posY) - 1 <= 0) return;
+
                 PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
                 sneakedFlag = true;
             } else if (inputs.y > 0 && !jumpedFlag) {
