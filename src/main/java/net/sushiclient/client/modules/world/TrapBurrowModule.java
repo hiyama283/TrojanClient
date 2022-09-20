@@ -1,16 +1,11 @@
 package net.sushiclient.client.modules.world;
 
 import net.minecraft.block.BlockAir;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.network.Packet;
-import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
@@ -30,7 +25,7 @@ public class TrapBurrowModule extends BaseModule {
     private final Configuration<Boolean> packetPlace;
     private final Configuration<EnumHand> placeHand;
     private final Configuration<Boolean> onlyInHole;
-    private final Configuration<Boolean> surroudOnEnable;
+    private final Configuration<Boolean> placeAssistBlock;
     private final Configuration<Boolean> burrowOnEnable;
     private final Configuration<Boolean> noBurrowOnShift;
     private final Configuration<Boolean> alwaysMode;
@@ -44,7 +39,7 @@ public class TrapBurrowModule extends BaseModule {
         packetPlace = provider.get("packet_place", "Packet place", null, Boolean.class, true);
         placeHand = provider.get("place_hand", "Place hand", null, EnumHand.class, EnumHand.MAIN_HAND);
         onlyInHole = provider.get("only_in_hole", "Only in hole", null, Boolean.class, true);
-        surroudOnEnable = provider.get("surround_on_enable", "Surround on enable", null, Boolean.class, false);
+        placeAssistBlock = provider.get("place_assist_block", "Place assist block", null, Boolean.class, true);
         burrowOnEnable = provider.get("burrow_on_enable", "Burrow on enabled", null, Boolean.class, true);
         noBurrowOnShift = provider.get("no_burrow_on_shift", "No burrow on shift", null, Boolean.class, false);
         alwaysMode = provider.get("always_mode", "Always mode", null, Boolean.class, false);
@@ -61,7 +56,7 @@ public class TrapBurrowModule extends BaseModule {
         EventHandlers.register(this);
         onEnablePos = mc.player.getPosition();
         ////////////////////////////////
-        if (surroudOnEnable.getValue())
+        if (placeAssistBlock.getValue())
             surround();
 
         if (burrowOnEnable.getValue())
@@ -92,28 +87,12 @@ public class TrapBurrowModule extends BaseModule {
             setEnabled(false, "Cannot find obsidian.");
         } else {
             InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
-                BlockPos[] block;
-                block = new BlockPos[]{
-                        new BlockPos(0, -1, 1),
-                        new BlockPos(0, -1, -1),
-                        new BlockPos(1, -1, 0),
-                        new BlockPos(-1, -1, 0),
-                        new BlockPos(0, -1, 0),
-
-                        new BlockPos(0, 0, 1),
-                        new BlockPos(0, 0, -1),
-                        new BlockPos(1, 0, 0),
-                        new BlockPos(-1, 0, 0),
-                };
                 BlockPos pos = new BlockPos(mc.player);
-
-                for (BlockPos add : block) {
-                    PositionUtils.move(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0,
+                PositionUtils.move(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0,
                             0, mc.player.onGround, PositionMask.POSITION);
 
-                    if (!(mc.world.getBlockState(pos) instanceof BlockAir))
-                        BlockUtils.lowArgPlace(pos.add(add), packetPlace.getValue());
-                }
+                BlockUtils.lowArgPlace(pos.add(EnumFacing.NORTH.getDirectionVec()).add(0, -1, 0), packetPlace.getValue());
+                BlockUtils.lowArgPlace(pos.add(EnumFacing.NORTH.getDirectionVec()), packetPlace.getValue());
             });
         }
     }
