@@ -41,13 +41,17 @@ public class TrapBurrowModule extends BaseModule {
         EventHandlers.register(this);
         step = 0;
         ////////////////////////////////
-        if (placeAssistBlock.getValue())
-            placeassist();
+        if (!placeAssistBlock.getValue()) {
+            BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(),
+                    packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
+            setEnabled(false);
+        }
     }
     
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
         if (PlayerUtils.isPlayerBurrow()) {
+            chatLog("Successfully placed.");
             setEnabled(false);
             return;
         }
@@ -89,22 +93,9 @@ public class TrapBurrowModule extends BaseModule {
                 }
                 break;
             case 2:
-                BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(),
+                BurrowUtils.burrow(BurrowLogType.ERROR, false, onlyInHole.getValue(),
                         packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
                 break;
-        }
-    }
-
-    private void placeassist() {
-        ItemSlot obsidianSlot = InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.OBSIDIAN), InventoryType.values());
-        if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
-            setEnabled(false, "Cannot find obsidian.");
-        } else {
-            InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
-                BlockPos pos = new BlockPos(mc.player);
-                PositionUtils.move(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0,
-                            0, mc.player.onGround, PositionMask.POSITION);
-            });
         }
     }
 
