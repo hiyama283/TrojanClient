@@ -79,7 +79,7 @@ public class BlockUtils {
         return null;
     }
 
-    public static void lowArgPlace(BlockPos pos, boolean packet) {
+    public static void lowArgPlace(BlockPos pos, boolean packet, EnumHand hand) {
         Block block = mc.world.getBlockState(pos).getBlock();
         if (!(block instanceof net.minecraft.block.BlockAir) && !(block instanceof net.minecraft.block.BlockLiquid))
             return;
@@ -88,12 +88,12 @@ public class BlockUtils {
             return;
         BlockPos neighbour = pos.offset(side);
         EnumFacing opposite = side.getOpposite();
-        Vec3d hitVec = (new Vec3d((Vec3i) neighbour)).add(0.5D, 0.5D, 0.5D).add((new Vec3d(opposite.getDirectionVec())).scale(0.5D));
+        Vec3d hitVec = (new Vec3d(neighbour)).add(0.5D, 0.5D, 0.5D).add((new Vec3d(opposite.getDirectionVec())).scale(0.5D));
         if (packet) {
-            rightClickBlock(neighbour, hitVec, opposite, EnumHand.MAIN_HAND);
+            rightClickBlock(neighbour, hitVec, opposite, hand);
         } else {
-            mc.playerController.processRightClickBlock(mc.player, mc.world, neighbour, opposite, hitVec, EnumHand.MAIN_HAND);
-            mc.player.swingArm(EnumHand.MAIN_HAND);
+            mc.playerController.processRightClickBlock(mc.player, mc.world, neighbour, opposite, hitVec, hand);
+            mc.player.swingArm(hand);
         }
 
     }

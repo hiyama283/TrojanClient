@@ -1,6 +1,6 @@
 package net.sushiclient.client.modules.world;
 
-import net.minecraft.block.BlockAir;
+import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
@@ -14,8 +14,8 @@ import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.tick.ClientTickEvent;
 import net.sushiclient.client.modules.*;
-import net.sushiclient.client.utils.EntityUtils;
 import net.sushiclient.client.utils.player.*;
+import net.sushiclient.client.utils.world.BlockPlaceInfo;
 import net.sushiclient.client.utils.world.BlockUtils;
 
 import java.util.Objects;
@@ -26,13 +26,7 @@ public class TrapBurrowModule extends BaseModule {
     private final Configuration<EnumHand> placeHand;
     private final Configuration<Boolean> onlyInHole;
     private final Configuration<Boolean> placeAssistBlock;
-    private final Configuration<Boolean> burrowOnEnable;
-    private final Configuration<Boolean> noBurrowOnShift;
-    private final Configuration<Boolean> alwaysMode;
-    private final Configuration<DoubleRange> trapDistance;
-    private final Configuration<Boolean> onMoveDisable;
-    private final Configuration<Boolean> onSurround;
-    private BlockPos onEnablePos;
+    private int step;
     public TrapBurrowModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         offset = provider.get("offset", "Offset", null, DoubleRange.class, new DoubleRange(0.2, 0.6, 0.1, 0.1, 1));
@@ -40,48 +34,68 @@ public class TrapBurrowModule extends BaseModule {
         placeHand = provider.get("place_hand", "Place hand", null, EnumHand.class, EnumHand.MAIN_HAND);
         onlyInHole = provider.get("only_in_hole", "Only in hole", null, Boolean.class, true);
         placeAssistBlock = provider.get("place_assist_block", "Place assist block", null, Boolean.class, true);
-        burrowOnEnable = provider.get("burrow_on_enable", "Burrow on enabled", null, Boolean.class, true);
-        noBurrowOnShift = provider.get("no_burrow_on_shift", "No burrow on shift", null, Boolean.class, false);
-        alwaysMode = provider.get("always_mode", "Always mode", null, Boolean.class, false);
-        trapDistance = provider.get("trap_distance", "Trap distance", null, DoubleRange.class, 
-                new DoubleRange(2.0, 5.0, 0.1, 0.1, 1), alwaysMode::isValid, false, 0);
-        onMoveDisable = provider.get("on_move_disable", "On move disable", null, Boolean.class,
-                true, alwaysMode::isValid, false, 0);
-        onSurround = provider.get("on_surround", "On surround", null, Boolean.class,
-                false, alwaysMode::isValid, false, 0);
     }
 
     @Override
     public void onEnable() {
         EventHandlers.register(this);
-        onEnablePos = mc.player.getPosition();
+        step = 0;
         ////////////////////////////////
         if (placeAssistBlock.getValue())
-            surround();
-
-        if (burrowOnEnable.getValue())
-            BurrowUtils.burrow(BurrowLogType.ALL, noBurrowOnShift.getValue(), onlyInHole.getValue(), packetPlace.getValue(),
-                    offset.getValue().getCurrent(), placeHand.getValue());
-
-        if (!alwaysMode.getValue())
-            setEnabled(false);
+            placeassist();
     }
     
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
-        if (onMoveDisable.getValue() && !getPlayer().getPosition().equals(onEnablePos))
+        if (PlayerUtils.isPlayerBurrow()) {
             setEnabled(false);
-        
-        if (onSurround.getValue())
-            surround();
+            return;
+        }
 
-        if (alwaysMode.getValue() && EntityUtils.getNearbyPlayers(
-                trapDistance.getValue().getCurrent()).size() > 0)
-            BurrowUtils.burrow(BurrowLogType.ALL, noBurrowOnShift.getValue(), onlyInHole.getValue(), packetPlace.getValue(),
-                    offset.getValue().getCurrent(), placeHand.getValue());
+        BlockPos  playerPos = new BlockPos(mc.player);
+
+        BlockPos addFacingPos = playerPos.add(EnumFacing.NORTH.getDirectionVec());
+        Block block = BlockUtils.getBlock(addFacingPos.add(0, -1, 0));
+        if (block != Blocks.AIR)
+            step = 1;
+
+        if (BlockUtils.getBlock(addFacingPos) != Blocks.AIR)
+            step = 2;
+
+        ItemSlot obsidianSlot = InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.OBSIDIAN), InventoryType.values());
+        switch (step) {
+            case 0:
+                if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
+                    setEnabled(false, "Cannot find obsidian.");
+                    return;
+                } else {
+                    InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
+                        PositionUtils.move(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5, 0,
+                                0, mc.player.onGround, PositionMask.POSITION);
+                        BlockUtils.lowArgPlace(playerPos.add(EnumFacing.NORTH.getDirectionVec()).add(0, -1, 0), packetPlace.getValue(), placeHand.getValue());
+                    });
+                }
+                break;
+            case 1:
+                if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
+                    setEnabled(false, "Cannot find obsidian.");
+                    return;
+                } else {
+                    InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
+                        PositionUtils.move(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5, 0,
+                                0, mc.player.onGround, PositionMask.POSITION);
+                        BlockUtils.lowArgPlace(playerPos.add(EnumFacing.NORTH.getDirectionVec()), packetPlace.getValue(), placeHand.getValue());
+                    });
+                }
+                break;
+            case 2:
+                BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(),
+                        packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
+                break;
+        }
     }
 
-    private void surround() {
+    private void placeassist() {
         ItemSlot obsidianSlot = InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.OBSIDIAN), InventoryType.values());
         if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
             setEnabled(false, "Cannot find obsidian.");
@@ -90,9 +104,6 @@ public class TrapBurrowModule extends BaseModule {
                 BlockPos pos = new BlockPos(mc.player);
                 PositionUtils.move(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0,
                             0, mc.player.onGround, PositionMask.POSITION);
-
-                BlockUtils.lowArgPlace(pos.add(EnumFacing.NORTH.getDirectionVec()).add(0, -1, 0), packetPlace.getValue());
-                BlockUtils.lowArgPlace(pos.add(EnumFacing.NORTH.getDirectionVec()), packetPlace.getValue());
             });
         }
     }
