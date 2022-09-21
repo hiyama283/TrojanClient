@@ -26,6 +26,7 @@ public class TrapBurrowModule extends BaseModule {
     private final Configuration<EnumHand> placeHand;
     private final Configuration<Boolean> onlyInHole;
     private final Configuration<Boolean> placeAssistBlock;
+    private final Configuration<Boolean> antiGhostBlock;
     private int step;
     public TrapBurrowModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
@@ -34,6 +35,7 @@ public class TrapBurrowModule extends BaseModule {
         placeHand = provider.get("place_hand", "Place hand", null, EnumHand.class, EnumHand.MAIN_HAND);
         onlyInHole = provider.get("only_in_hole", "Only in hole", null, Boolean.class, true);
         placeAssistBlock = provider.get("place_assist_block", "Place assist block", null, Boolean.class, true);
+        antiGhostBlock = provider.get("anti_ghost_block", "Anti ghost block", null, Boolean.class, true);
     }
 
     @Override
@@ -41,7 +43,12 @@ public class TrapBurrowModule extends BaseModule {
         EventHandlers.register(this);
         step = 0;
         ////////////////////////////////
-        if (!placeAssistBlock.getValue()) {
+        if (onlyInHole.getValue() && !PositionUtils.isPlayerInHole()) {
+            setEnabled(false, "You are not in hole!");
+            return;
+        }
+
+        if (!placeAssistBlock.getValue() || onlyInHole.getValue()) {
             BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(),
                     packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
             setEnabled(false);
@@ -56,7 +63,12 @@ public class TrapBurrowModule extends BaseModule {
             return;
         }
 
-        BlockPos  playerPos = new BlockPos(mc.player);
+        BlockPos playerPos = new BlockPos(mc.player);
+        BlockPos downSidePos = playerPos.add(EnumFacing.NORTH.getDirectionVec()).add(0, -1, 0);
+        BlockPos sidePos = playerPos.add(EnumFacing.NORTH.getDirectionVec());
+
+        if (antiGhostBlock.getValue())
+            BlockUtils.checkGhostBlock(playerPos, downSidePos, sidePos);
 
         BlockPos addFacingPos = playerPos.add(EnumFacing.NORTH.getDirectionVec());
         Block block = BlockUtils.getBlock(addFacingPos.add(0, -1, 0));
@@ -76,7 +88,9 @@ public class TrapBurrowModule extends BaseModule {
                     InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
                         PositionUtils.move(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5, 0,
                                 0, mc.player.onGround, PositionMask.POSITION);
-                        BlockUtils.lowArgPlace(playerPos.add(EnumFacing.NORTH.getDirectionVec()).add(0, -1, 0), packetPlace.getValue(), placeHand.getValue());
+
+                        BlockUtils.lowArgPlace(downSidePos, packetPlace.getValue(), placeHand.getValue());
+                        BlockUtils.checkGhostBlock(downSidePos);
                     });
                 }
                 break;
@@ -88,7 +102,7 @@ public class TrapBurrowModule extends BaseModule {
                     InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
                         PositionUtils.move(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5, 0,
                                 0, mc.player.onGround, PositionMask.POSITION);
-                        BlockUtils.lowArgPlace(playerPos.add(EnumFacing.NORTH.getDirectionVec()), packetPlace.getValue(), placeHand.getValue());
+                        BlockUtils.lowArgPlace(sidePos, packetPlace.getValue(), placeHand.getValue());
                     });
                 }
                 break;

@@ -13,6 +13,7 @@ import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.player.PlayerTravelEvent;
 import net.sushiclient.client.modules.*;
 import net.sushiclient.client.utils.EntityUtils;
+import net.sushiclient.client.utils.PhaseWalkTimer;
 import net.sushiclient.client.utils.TpsUtils;
 import net.sushiclient.client.utils.player.MovementUtils;
 import net.sushiclient.client.utils.player.PlayerUtils;
@@ -28,6 +29,9 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     private boolean suffix;
     private boolean sneakedFlag;
     private boolean jumpedFlag;
+    private final PhaseWalkTimer timer = new PhaseWalkTimer();
+    private boolean firstStart = true;
+    private long startTime = 0;
     public PhaseWalkRewriteModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         tpsSync = provider.get("tps_sync", "Tps sync", null, Boolean.class, false);
@@ -58,6 +62,11 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     @EventHandler(timing = EventTiming.PRE)
     public void onPlayerTravel(PlayerTravelEvent e) {
         if (EntityUtils.isInsideBlock(getPlayer()) && PlayerUtils.isPlayerInClip()) {
+            if (firstStart) {
+                timer.start();
+                startTime = System.currentTimeMillis();
+                firstStart = false;
+            }
             speedModulePauseManager(true);
 
             EntityPlayerSP player = getPlayer();
@@ -111,13 +120,19 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
 
         } else {
             suffix = false;
+            firstStart = true;
             speedModulePauseManager(false);
+
+            if (startTime != 0) {
+                chatDebugLog(String.valueOf(System.currentTimeMillis() - startTime));
+                startTime = 0;
+            }
         }
     }
 
     @Override
     public String getSuffix() {
-        return suffix ? "Enabled" : "Disabled";
+        return suffix ? "Enabled [" + timer.toString() + "]" : "Disabled";
     }
 
     @Override

@@ -27,7 +27,7 @@ public class ChatSuffixModule extends BaseModule {
     public ChatSuffixModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         suffix = provider.get("suffix", "Suffix", null, String.class, " | shark-s");
-        commandPrefixes = provider.get("command_prefixes", "Command Prefixes", null, String.class, "/ .");
+        commandPrefixes = provider.get("command_prefixes", "Command Prefixes", null, String.class, "/ #");
         mode = provider.get("mode", "Mode", null, IntRange.class, new IntRange(0, 2, 0, 1));
     }
 

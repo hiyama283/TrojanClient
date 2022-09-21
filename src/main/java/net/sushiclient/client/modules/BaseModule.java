@@ -14,6 +14,8 @@ import net.sushiclient.client.config.ConfigurationCategory;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.gui.hud.ElementConstructor;
 import net.sushiclient.client.gui.hud.ElementFactory;
+import net.sushiclient.client.modules.client.DebugModule;
+import net.sushiclient.client.modules.movement.SpeedModule;
 
 import java.util.ArrayList;
 
@@ -132,6 +134,15 @@ abstract public class BaseModule implements Module {
 
     public void chatLog(String message) {
         this.chatLog(LogLevel.INFO, message);
+    }
+
+    public void chatDebugLog(String message) {
+        for (Module module : Sushi.getProfile().getModules().getAll()) {
+            if (!(module instanceof DebugModule)) continue;
+            if (module.isEnabled()) {
+                chatLog(message);
+            }
+        }
     }
 
     @Override

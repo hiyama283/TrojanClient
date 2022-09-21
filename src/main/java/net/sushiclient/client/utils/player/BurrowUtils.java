@@ -14,12 +14,23 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.Sushi;
 import net.sushiclient.client.command.LogLevel;
+import net.sushiclient.client.modules.Module;
+import net.sushiclient.client.modules.client.DebugModule;
 import net.sushiclient.client.utils.world.BlockUtils;
 
 public class BurrowUtils {
     private static void sendPacket(Packet<?> packet) {
         NetHandlerPlayClient connection = Minecraft.getMinecraft().player.connection;
         if (connection != null) connection.sendPacket(packet);
+    }
+
+    private static void chatDebugLog(String message) {
+        for (Module module : Sushi.getProfile().getModules().getAll()) {
+            if (!(module instanceof DebugModule)) continue;
+            if (module.isEnabled()) {
+                info(message);
+            }
+        }
     }
 
     private static void info(String message) {
@@ -100,7 +111,7 @@ public class BurrowUtils {
 
         if (showSuccessful) {
             info("Successfully trap placed.");
-            info("Position x:" + trapPos.getX() + " y:" + trapPos.getY() + " z:" + trapPos.getZ());
+            chatDebugLog("Position x:" + trapPos.getX() + " y:" + trapPos.getY() + " z:" + trapPos.getZ());
         }
         return true;
     }

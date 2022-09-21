@@ -54,7 +54,9 @@ public class SpeedMineModule extends BaseModule {
 
         // packet mine
         if (packetMine && breakingBlock != null && !BlockUtils.isAir(getWorld(), breakingBlock)) {
-            AxisAlignedBB box = getWorld().getBlockState(breakingBlock).getBoundingBox(getWorld(), breakingBlock).offset(breakingBlock).grow(0.002);
+            AxisAlignedBB box = getWorld().getBlockState(breakingBlock).getBoundingBox(getWorld(), breakingBlock);
+            box = box.offset(breakingBlock).grow(0.002);
+
             GlStateManager.disableDepth();
             RenderUtils.drawFilled(box, new Color(255, 0, 0));
             GlStateManager.enableDepth();

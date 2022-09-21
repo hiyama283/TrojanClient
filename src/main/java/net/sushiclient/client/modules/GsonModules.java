@@ -131,6 +131,7 @@ public class GsonModules implements Modules {
         addModuleFactory("rotation_view", RotationViewModule::new, true);
         addModuleFactory("chat_suffix", ChatSuffixModule::new, true);
         addModuleFactory("test", TestModule::new, true);
+        addModuleFactory("debug", DebugModule::new, true);
     }
 
     private void addModuleFactory(String id, ModuleConstructor constructor, boolean isDefault) {
