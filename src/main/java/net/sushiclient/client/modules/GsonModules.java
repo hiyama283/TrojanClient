@@ -77,6 +77,7 @@ public class GsonModules implements Modules {
         addModuleFactory("step", StepModule::new, true);
         addModuleFactory("holetp", HoleTPModule::new, true);
         addModuleFactory("phase_walk_rewrite", PhaseWalkRewriteModule::new, true);
+        addModuleFactory("fast_stop", FastStopModule::new, true);
 
         // Render
         addModuleFactory("block_highlight", BlockHighlightModule::new, true);

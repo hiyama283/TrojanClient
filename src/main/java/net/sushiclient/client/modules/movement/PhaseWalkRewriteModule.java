@@ -1,6 +1,7 @@
 package net.sushiclient.client.modules.movement;
 
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.Sushi;
@@ -19,6 +20,7 @@ import net.sushiclient.client.utils.player.MovementUtils;
 import net.sushiclient.client.utils.player.PlayerUtils;
 import net.sushiclient.client.utils.player.PositionMask;
 import net.sushiclient.client.utils.player.PositionUtils;
+import net.sushiclient.client.utils.world.BlockUtils;
 
 public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     private final Configuration<Boolean> tpsSync;
@@ -26,6 +28,9 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     private final Configuration<DoubleRange> multiplier;
     private final Configuration<Boolean> jumpLimit;
     private final Configuration<Boolean> shiftLimit;
+    private final Configuration<Boolean> checkTerrain;
+    private final Configuration<Boolean> checkTerrainUp;
+    private final Configuration<Boolean> checkTerrainDown;
     private boolean suffix;
     private boolean sneakedFlag;
     private boolean jumpedFlag;
@@ -40,6 +45,12 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
         multiplier = provider.get("multiplier", "Multiplier", null, DoubleRange.class, new DoubleRange(0.5, 5, 0.1, 0.1, 1));
         jumpLimit = provider.get("jump_limit", "Jump limit", null, Boolean.class, true);
         shiftLimit = provider.get("shift_limit", "Shift limit", null, Boolean.class, true);
+        checkTerrain = provider.get("check_terrain", "Check terrain", null, Boolean.class, false);
+        checkTerrainUp = provider.get("check_terrain_up", "Check terrain up", null, Boolean.class, false,
+                checkTerrain::getValue, false, 0);
+        checkTerrainDown = provider.get("check_terrain_down", "Check terrain down", null, Boolean.class, false,
+                checkTerrain::getValue, false, 0);
+
     }
 
     private boolean paused = false;
@@ -72,12 +83,30 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
             EntityPlayerSP player = getPlayer();
             if (player.isElytraFlying()) return;
             Vec3d inputs = MovementUtils.getMoveInputs(player).normalize();
+
             // chatLog("Input X:" + inputs.x + " Y:" + inputs.y + " Z:" + inputs.z);
             suffix = true;
             if (shiftLimit.getValue() && sneakedFlag && !getPlayer().isSneaking())
                 sneakedFlag = false;
             if (jumpLimit.getValue() && jumpedFlag && inputs.y == 0)
                 jumpedFlag = false;
+
+            if (checkTerrain.getValue()) {
+                if (checkTerrainUp.getValue()) {
+                    if (BlockUtils.getBlock(player.getPosition()
+                            .add(0, 1, 0)) != Blocks.AIR) {
+                        PositionUtils.move(player.posX, player.posY + 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+                    }
+                }
+
+                if (checkTerrainDown.getValue()) {
+                    Vec2f vec = MovementUtils.toWorld(new Vec2f((float) inputs.x, (float) inputs.z), player.rotationYaw);
+
+                    if (BlockUtils.getBlock(player.getPosition().add(vec.x, 0, vec.y)) == Blocks.AIR) {
+                        PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+                    }
+                }
+            }
 
 
             player.motionX = 0;
@@ -132,7 +161,10 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
 
     @Override
     public String getSuffix() {
-        return suffix ? "Enabled [" + timer.toString() + "]" : "Disabled";
+        if (suffix && BlockUtils.getBlock(getPlayer().getPosition()) == Blocks.ANVIL)
+            return "Enabled [ANVIL]";
+        else
+            return suffix ? "Enabled [" + timer.toString() + "]" : "Disabled";
     }
 
     @Override
