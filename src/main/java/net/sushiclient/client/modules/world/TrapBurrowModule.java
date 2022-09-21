@@ -93,8 +93,12 @@ public class TrapBurrowModule extends BaseModule {
                 }
                 break;
             case 2:
-                BurrowUtils.burrow(BurrowLogType.ERROR, false, onlyInHole.getValue(),
+                boolean r = BurrowUtils.burrow(BurrowLogType.ERROR, false, onlyInHole.getValue(),
                         packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
+
+                if (!r) {
+                    setEnabled(false);
+                }
                 break;
         }
     }

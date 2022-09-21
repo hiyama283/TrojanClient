@@ -30,26 +30,26 @@ public class BurrowUtils {
         Sushi.getProfile().getLogger().send(LogLevel.ERROR, message);
     }
 
-    public static void burrow(BurrowLogType logType, boolean noBurrowOnShift, boolean onlyInHole,
+    public static boolean burrow(BurrowLogType logType, boolean noBurrowOnShift, boolean onlyInHole,
                               boolean packetPlace, Double moveOffset, EnumHand hand) {
-        burrow(logType.getShowError(), logType.getShowSuccess(), noBurrowOnShift, onlyInHole, packetPlace, moveOffset, hand);
+        return burrow(logType.getShowError(), logType.getShowSuccess(), noBurrowOnShift, onlyInHole, packetPlace, moveOffset, hand);
     }
 
-    public static void burrow(boolean showError, boolean showSuccessful, boolean noBurrowOnShift, boolean onlyInHole,
+    public static boolean burrow(boolean showError, boolean showSuccessful, boolean noBurrowOnShift, boolean onlyInHole,
                               boolean packetPlace, Double moveOffset, EnumHand hand) {
         Minecraft mc = Minecraft.getMinecraft();
         if (PlayerUtils.isPlayerBurrow() || noBurrowOnShift && mc.player.isSneaking())
-            return;
+            return true;
 
         if (!PositionUtils.isPlayerInHole() && onlyInHole) {
             if (showError) error("You are not in hole!");
-            return;
+            return false;
         }
 
         ItemSlot slot = InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.IRON_TRAPDOOR), InventoryType.HOTBAR);
         if (slot == null) {
             if (showError) error("Cannot find iron trapdoor.");
-            return;
+            return false;
         }
 
         BlockPos playerPos = BlockUtils.toBlockPos(mc.player.getPositionVector());
@@ -69,7 +69,7 @@ public class BurrowUtils {
 
         if (trapPos == null) {
             if (showError) info("No trapdoor space.");
-            return;
+            return false;
         }
 
         double x = mc.player.posX;
@@ -87,7 +87,7 @@ public class BurrowUtils {
 
         if (facing == null) {
             if (showError) info("Facing not found.");
-            return;
+            return false;
         }
 
         BlockPos finalTrapPos = trapPos;
@@ -102,5 +102,6 @@ public class BurrowUtils {
             info("Successfully trap placed.");
             info("Position x:" + trapPos.getX() + " y:" + trapPos.getY() + " z:" + trapPos.getZ());
         }
+        return true;
     }
 }
