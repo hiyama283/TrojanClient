@@ -51,14 +51,22 @@ public class PlayerUtils {
         }
     }
 
-    public static boolean isPlayerBurrow() {
-        BlockPos pos = getEntityPos(Minecraft.getMinecraft().player);
+    public static boolean isPlayerBurrow(EntityPlayerSP playerSP) {
+        BlockPos pos = getEntityPos(playerSP);
         return BlockUtils.getBlock(pos) != Blocks.AIR;
     }
 
-    public static boolean isPlayerInClip() {
-        BlockPos pos = getEntityPos(Minecraft.getMinecraft().player);
+    public static boolean isPlayerBurrow() {
+        return isPlayerBurrow(mc.player);
+    }
+
+    public static boolean isPlayerInClip(EntityPlayerSP playerSP) {
+        BlockPos pos = getEntityPos(playerSP);
         return BlockUtils.getBlock(pos) != Blocks.AIR || BlockUtils.getBlock(pos.add(0, 1, 0)) != Blocks.AIR;
+    }
+
+    public static boolean isPlayerInClip() {
+        return isPlayerInClip(mc.player);
     }
 
     private static BlockPos getEntityPos(Entity e) {

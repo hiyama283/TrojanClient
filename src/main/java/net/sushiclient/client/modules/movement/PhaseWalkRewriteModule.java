@@ -9,6 +9,7 @@ import net.sushiclient.client.Sushi;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
+import net.sushiclient.client.config.data.IntRange;
 import net.sushiclient.client.events.EventHandler;
 import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
@@ -30,6 +31,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     private final Configuration<Boolean> jumpLimit;
     private final Configuration<Boolean> shiftLimit;
     private final Configuration<Boolean> voidSafe;
+    private final Configuration<IntRange> voidY;
     private final Configuration<Boolean> checkTerrain;
     private final Configuration<Boolean> checkTerrainUp;
     private final Configuration<Boolean> checkTerrainDown;
@@ -47,13 +49,14 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
         multiplier = provider.get("multiplier", "Multiplier", null, DoubleRange.class, new DoubleRange(0.5, 5, 0.1, 0.1, 1));
         jumpLimit = provider.get("jump_limit", "Jump limit", null, Boolean.class, true);
         shiftLimit = provider.get("shift_limit", "Shift limit", null, Boolean.class, true);
-        voidSafe = provider.get("void_safe", "Void safe", "For crystalpvp.jp", Boolean.class, true);
+        voidSafe = provider.get("void_safe", "Void safe", null, Boolean.class, true);
+        voidY = provider.get("void_y", "Void y", null, IntRange.class, new IntRange(60, 65, -1, 1),
+                voidSafe::getValue, false, 0);
         checkTerrain = provider.get("check_terrain", "Check terrain", null, Boolean.class, false);
         checkTerrainUp = provider.get("check_terrain_up", "Check terrain up", null, Boolean.class, false,
                 checkTerrain::getValue, false, 0);
         checkTerrainDown = provider.get("check_terrain_down", "Check terrain down", null, Boolean.class, false,
                 checkTerrain::getValue, false, 0);
-
     }
 
     private boolean paused = false;
@@ -120,8 +123,11 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
             player.fallDistance = 0;
             player.onGround = false;
 
-            double x = inputs.x;
-            double z = inputs.z;
+            double x;
+            double z;
+
+            x = inputs.x;
+            z = inputs.z;
 
             x *= multiplier.getValue().getCurrent();
             z *= multiplier.getValue().getCurrent();
@@ -142,10 +148,12 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
             player.motionY = 0;
             player.motionZ = vec.y;
 
-            if (player.isSneaking() && player.posY - 1 >= 60) {
+            if (player.isSneaking()) {
                 if (shiftLimit.getValue()) {
-                    if (!sneakedFlag)
+                    if (!sneakedFlag) {
+                        if (voidSafe.getValue() && player.posY - 1 <= voidY.getValue().getCurrent()) return;
                         PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+                    }
                 } else
                     PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
                 sneakedFlag = true;

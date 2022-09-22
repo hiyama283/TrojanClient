@@ -33,9 +33,8 @@ public class AutoMendModule extends BaseModule {
     private final Configuration<Boolean> autoDisable;
     private final Configuration<Boolean> crystalCheck;
     private final Configuration<IntRange> selfHp;
-    private final Configuration<Boolean> switchBack;
+    private final Configuration<Boolean> packet;
     private final UpdateTimer timer;
-    private int defaultHotbar;
 
     private static final EntityEquipmentSlot[] SLOTS = {
             EntityEquipmentSlot.FEET,
@@ -51,14 +50,13 @@ public class AutoMendModule extends BaseModule {
         autoDisable = provider.get("auto_disable", "Auto Disable", null, Boolean.class, true);
         crystalCheck = provider.get("crystal_check", "Crystal Check", null, Boolean.class, true);
         selfHp = provider.get("slef_hp", "Self HP", null, IntRange.class, new IntRange(6, 20, 0, 1));
-        switchBack = provider.get("switch_back", "Switch back", null, Boolean.class, true);
+        packet = provider.get("packet", "Packet", null, Boolean.class, true);
         timer = new UpdateTimer(false, delay);
     }
 
     @Override
     public void onEnable() {
         EventHandlers.register(this);
-        defaultHotbar = ItemSlot.current().getIndex();
     }
 
     @Override
@@ -68,9 +66,6 @@ public class AutoMendModule extends BaseModule {
             if (!(module instanceof AutoArmorModule)) continue;
             module.setPaused(false);
         }
-
-        if (switchBack.getValue())
-            InventoryUtils.moveHotbar(defaultHotbar);
     }
 
     private EntityEquipmentSlot getEntityEquipmentSlot(ItemSlot itemSlot) {
@@ -140,14 +135,24 @@ public class AutoMendModule extends BaseModule {
             return;
         }
 
+        if (!packet.getValue()) {
+            InventoryUtils.moveToHotbar(expBottle);
+            InventoryUtils.moveHotbar(expBottle.getIndex());
+        }
         timer.update();
-        InventoryUtils.moveToHotbar(expBottle);
-        InventoryUtils.moveHotbar(expBottle.getIndex());
         PositionUtils.require()
                 .desyncMode(PositionMask.LOOK)
                 .rotation(getPlayer().rotationYaw, 90);
         PositionUtils.on(() -> {
-            sendPacket(new CPacketPlayerTryUseItem(EnumHand.MAIN_HAND));
+            if (packet.getValue()) {
+                int hot = ItemSlot.current().getIndex();
+                InventoryUtils.moveToHotbar(expBottle);
+                InventoryUtils.moveHotbar(expBottle.getIndex());
+                sendPacket(new CPacketPlayerTryUseItem(EnumHand.MAIN_HAND));
+                InventoryUtils.moveHotbar(hot);
+            } else {
+                sendPacket(new CPacketPlayerTryUseItem(EnumHand.MAIN_HAND));
+            }
         });
     }
 

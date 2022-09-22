@@ -10,6 +10,8 @@ public enum AutoTrapBlocks implements Named {
     OBSIDIAN(Blocks.OBSIDIAN, "Obsidian"),
     @SerializedName("Anvil")
     ANVIL(Blocks.ANVIL, "Anvil"),
+    @SerializedName("Web")
+    WEB(Blocks.WEB, "Web"),
     ;
 
 
