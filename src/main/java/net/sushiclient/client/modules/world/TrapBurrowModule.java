@@ -28,6 +28,7 @@ public class TrapBurrowModule extends BaseModule {
     private final Configuration<Boolean> onlyInHole;
     private final Configuration<Boolean> placeAssistBlock;
     private final Configuration<Boolean> antiGhostBlock;
+    private final Configuration<Boolean> onMoveBurrowed;
     private int step;
     public TrapBurrowModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
@@ -37,6 +38,33 @@ public class TrapBurrowModule extends BaseModule {
         onlyInHole = provider.get("only_in_hole", "Only in hole", null, Boolean.class, true);
         placeAssistBlock = provider.get("place_assist_block", "Place assist block", null, Boolean.class, true);
         antiGhostBlock = provider.get("anti_ghost_block", "Anti ghost block", null, Boolean.class, true);
+        onMoveBurrowed = provider.get("on_move_burrowed", "On move burrowed", "What is this", Boolean.class, false);
+    }
+
+    private BlockPos searchMovePos() {
+        BlockPos pos = getPlayer().getPosition();
+        BlockPos[] offsets = {
+                new BlockPos(1, 0, 1),
+                new BlockPos(1, 0, 0),
+                new BlockPos(1, 0, -1),
+                new BlockPos(0, 0, 1),
+                new BlockPos(0, 0, -1),
+                new BlockPos(-1, 0, 1),
+                new BlockPos(-1, 0, 0),
+                new BlockPos(-1, 0, -1),
+                new BlockPos(0, -1, 0),
+        };
+
+        BlockPos tpPos = null;
+        for (BlockPos offset : offsets) {
+            BlockPos addPos = pos.add(offset);
+            if (BlockUtils.getBlock(addPos) != Blocks.AIR) {
+                tpPos = addPos;
+            }
+        }
+
+        if (Objects.isNull(tpPos)) return pos;
+        return tpPos;
     }
 
     @Override
@@ -49,9 +77,16 @@ public class TrapBurrowModule extends BaseModule {
             return;
         }
 
-        if (!placeAssistBlock.getValue() || onlyInHole.getValue() || PositionUtils.isPlayerInHole()) {
+        if (!placeAssistBlock.getValue() || onlyInHole.getValue() || PositionUtils.isPlayerInHole() ||
+            !BlockUtils.isAir(getWorld(), getPlayer().getPosition().add(EnumFacing.NORTH.getDirectionVec()))) {
+
             BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(),
                     packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
+
+            if (onMoveBurrowed.getValue()) {
+                BlockPos movePos = searchMovePos();
+                PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
+            }
             setEnabled(false);
         }
     }
@@ -60,6 +95,12 @@ public class TrapBurrowModule extends BaseModule {
     public void onClientTick(ClientTickEvent e) {
         if (PlayerUtils.isPlayerBurrow()) {
             chatLog("Successfully placed.");
+
+            if (onMoveBurrowed.getValue()) {
+                BlockPos movePos = searchMovePos();
+                PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
+            }
+
             setEnabled(false);
             return;
         }

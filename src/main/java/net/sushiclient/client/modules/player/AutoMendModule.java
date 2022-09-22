@@ -144,15 +144,9 @@ public class AutoMendModule extends BaseModule {
                 .desyncMode(PositionMask.LOOK)
                 .rotation(getPlayer().rotationYaw, 90);
         PositionUtils.on(() -> {
-            if (packet.getValue()) {
-                int hot = ItemSlot.current().getIndex();
-                InventoryUtils.moveToHotbar(expBottle);
-                InventoryUtils.moveHotbar(expBottle.getIndex());
+            InventoryUtils.silentSwitch(packet.getValue(), expBottle.getIndex(), () -> {
                 sendPacket(new CPacketPlayerTryUseItem(EnumHand.MAIN_HAND));
-                InventoryUtils.moveHotbar(hot);
-            } else {
-                sendPacket(new CPacketPlayerTryUseItem(EnumHand.MAIN_HAND));
-            }
+            });
         });
     }
 

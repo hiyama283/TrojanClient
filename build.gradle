@@ -13,7 +13,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-archivesBaseName = 'shark-sushi-0.3.9'
+archivesBaseName = 'shark-sushi-0.3.12'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
