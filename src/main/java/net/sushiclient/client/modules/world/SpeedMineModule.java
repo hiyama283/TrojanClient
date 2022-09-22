@@ -52,15 +52,15 @@ public class SpeedMineModule extends BaseModule {
         BlockPos breakingBlock = BlockUtils.getBreakingBlockPos();
         AccessorPlayerControllerMP controller = (AccessorPlayerControllerMP) getController();
 
+        AxisAlignedBB box = getWorld().getBlockState(breakingBlock).getBoundingBox(getWorld(), breakingBlock);
+        box = box.offset(breakingBlock).grow(0.002);
+
+        GlStateManager.disableDepth();
+        RenderUtils.drawFilled(box, new Color(255, 0, 0));
+        GlStateManager.enableDepth();
+
         // packet mine
-        if (packetMine && breakingBlock != null && !BlockUtils.isAir(getWorld(), breakingBlock)) {
-            AxisAlignedBB box = getWorld().getBlockState(breakingBlock).getBoundingBox(getWorld(), breakingBlock);
-            box = box.offset(breakingBlock).grow(0.002);
-
-            GlStateManager.disableDepth();
-            RenderUtils.drawFilled(box, new Color(255, 0, 0));
-            GlStateManager.enableDepth();
-
+        if (packetMine && !BlockUtils.isAir(getWorld(), breakingBlock)) {
             sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, breakingBlock, EnumFacing.DOWN));
         }
 

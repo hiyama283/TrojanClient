@@ -1,5 +1,6 @@
 package net.sushiclient.client.modules.combat;
 
+import jdk.nashorn.internal.ir.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -27,11 +28,13 @@ import java.util.List;
 public class AutoTrapModule extends BaseModule {
 
     private final Configuration<RotateMode> rotateMode;
+    private final Configuration<AutoTrapBlocks> useBlock;
     private boolean running;
 
     public AutoTrapModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         rotateMode = provider.get("rotate_mode", "Rotate Mode", null, RotateMode.class, RotateMode.NCP);
+        useBlock = provider.get("use_block", "Use block", null, AutoTrapBlocks.class, AutoTrapBlocks.OBSIDIAN);
     }
 
     @Override
@@ -75,8 +78,9 @@ public class AutoTrapModule extends BaseModule {
         }
         if (target == null) return;
         running = true;
+
         TaskExecutor.newTaskChain()
-                .supply(Item.getItemFromBlock(Blocks.OBSIDIAN))
+                .supply(Item.getItemFromBlock(useBlock.getValue().getBlock()))
                 .then(new ItemSwitchTask(null, true))
                 .abortIfFalse()
                 .supply(target)

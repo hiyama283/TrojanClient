@@ -9,6 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
+import net.sushiclient.client.config.data.IntRange;
 import net.sushiclient.client.events.EventHandler;
 import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
@@ -48,7 +49,7 @@ public class TrapBurrowModule extends BaseModule {
             return;
         }
 
-        if (!placeAssistBlock.getValue() || onlyInHole.getValue()) {
+        if (!placeAssistBlock.getValue() || onlyInHole.getValue() || PositionUtils.isPlayerInHole()) {
             BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(),
                     packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
             setEnabled(false);
@@ -63,18 +64,19 @@ public class TrapBurrowModule extends BaseModule {
             return;
         }
 
+        if (Objects.isNull(InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.OBSIDIAN), InventoryType.values()))) {
+            setEnabled(false, "Cannot find trap door.");
+            return;
+        }
+
         BlockPos playerPos = new BlockPos(mc.player);
         BlockPos downSidePos = playerPos.add(EnumFacing.NORTH.getDirectionVec()).add(0, -1, 0);
         BlockPos sidePos = playerPos.add(EnumFacing.NORTH.getDirectionVec());
-
-        if (antiGhostBlock.getValue())
-            BlockUtils.checkGhostBlock(playerPos, downSidePos, sidePos);
 
         BlockPos addFacingPos = playerPos.add(EnumFacing.NORTH.getDirectionVec());
         Block block = BlockUtils.getBlock(addFacingPos.add(0, -1, 0));
         if (block != Blocks.AIR)
             step = 1;
-
         if (BlockUtils.getBlock(addFacingPos) != Blocks.AIR)
             step = 2;
 
@@ -90,7 +92,7 @@ public class TrapBurrowModule extends BaseModule {
                                 0, mc.player.onGround, PositionMask.POSITION);
 
                         BlockUtils.lowArgPlace(downSidePos, packetPlace.getValue(), placeHand.getValue());
-                        BlockUtils.checkGhostBlock(downSidePos);
+                        if (antiGhostBlock.getValue()) BlockUtils.checkGhostBlock(downSidePos);
                     });
                 }
                 break;
@@ -103,6 +105,7 @@ public class TrapBurrowModule extends BaseModule {
                         PositionUtils.move(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5, 0,
                                 0, mc.player.onGround, PositionMask.POSITION);
                         BlockUtils.lowArgPlace(sidePos, packetPlace.getValue(), placeHand.getValue());
+                        if (antiGhostBlock.getValue()) BlockUtils.checkGhostBlock(sidePos);
                     });
                 }
                 break;
@@ -112,7 +115,8 @@ public class TrapBurrowModule extends BaseModule {
 
                 if (!r) {
                     setEnabled(false);
-                }
+                } else if (antiGhostBlock.getValue())
+                    BlockUtils.checkGhostBlock(playerPos);
                 break;
         }
     }

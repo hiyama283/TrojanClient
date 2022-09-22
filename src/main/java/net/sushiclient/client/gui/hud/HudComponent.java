@@ -32,6 +32,7 @@ public class HudComponent extends BasePanelComponent<HudElementComponent> {
         addElement(FpsComponent::new, "fps", "FPS");
         addElement(TpsComponent::new, "tps", "TPS");
         addElement(SpeedComponent::new, "speed", "Speed");
+        addElement(WatermarkComponent::new, "watermark", "Watermark");
     }
 
     private void addVirtual(VirtualHudElementComponent component) {

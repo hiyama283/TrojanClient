@@ -2,6 +2,7 @@ package net.sushiclient.client.modules.movement;
 
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.Sushi;
@@ -28,6 +29,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     private final Configuration<DoubleRange> multiplier;
     private final Configuration<Boolean> jumpLimit;
     private final Configuration<Boolean> shiftLimit;
+    private final Configuration<Boolean> voidSafe;
     private final Configuration<Boolean> checkTerrain;
     private final Configuration<Boolean> checkTerrainUp;
     private final Configuration<Boolean> checkTerrainDown;
@@ -45,6 +47,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
         multiplier = provider.get("multiplier", "Multiplier", null, DoubleRange.class, new DoubleRange(0.5, 5, 0.1, 0.1, 1));
         jumpLimit = provider.get("jump_limit", "Jump limit", null, Boolean.class, true);
         shiftLimit = provider.get("shift_limit", "Shift limit", null, Boolean.class, true);
+        voidSafe = provider.get("void_safe", "Void safe", "For crystalpvp.jp", Boolean.class, true);
         checkTerrain = provider.get("check_terrain", "Check terrain", null, Boolean.class, false);
         checkTerrainUp = provider.get("check_terrain_up", "Check terrain up", null, Boolean.class, false,
                 checkTerrain::getValue, false, 0);
@@ -139,11 +142,19 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
             player.motionY = 0;
             player.motionZ = vec.y;
 
-            if (player.isSneaking() && !sneakedFlag) {
-                PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+            if (player.isSneaking() && player.posY - 1 >= 60) {
+                if (shiftLimit.getValue()) {
+                    if (!sneakedFlag)
+                        PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+                } else
+                    PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
                 sneakedFlag = true;
-            } else if (inputs.y > 0 && !jumpedFlag) {
-                PositionUtils.move(player.posX, player.posY + 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+            } else if (inputs.y > 0) {
+                if (jumpLimit.getValue()) {
+                    if (!jumpedFlag)
+                        PositionUtils.move(player.posX, player.posY + 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+                } else
+                    PositionUtils.move(player.posX, player.posY + 1, player.posZ, 0, 0, false, PositionMask.POSITION);
                 jumpedFlag = true;
             }
 
