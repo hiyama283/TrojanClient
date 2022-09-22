@@ -11,7 +11,7 @@ public class WatermarkComponent extends TextElementComponent {
 
     @Override
     protected String getText() {
-        return ModInformation.name + "-" + ModInformation.version + "\nWelcome to " + ModInformation.name + " " + ModInformation.version;
+        return ModInformation.name + "-" + ModInformation.version;
     }
 
     @Override
