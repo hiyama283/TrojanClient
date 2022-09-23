@@ -121,7 +121,6 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
 
             player.noClip = EntityUtils.isInsideBlock(getPlayer());
             player.fallDistance = 0;
-            player.onGround = false;
 
             double x;
             double z;

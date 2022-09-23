@@ -6,6 +6,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.sushiclient.client.Sushi;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
@@ -59,11 +60,20 @@ public class PhaseFlyModule extends BaseModule {
             BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(), packetPlace.getValue(),
                     0.2, placeHand.getValue());
         }
+
+        for (Module m : Sushi.getProfile().getModules().getAll()) {
+            if (!(m instanceof PhaseWalkRewriteModule)) return;
+            m.setPaused(true);
+        }
     }
 
     @Override
     public void onDisable() {
         EventHandlers.unregister(this);
+        for (Module m : Sushi.getProfile().getModules().getAll()) {
+            if (!(m instanceof PhaseWalkRewriteModule)) return;
+            m.setPaused(false);
+        }
     }
 
     @EventHandler(timing = EventTiming.PRE)

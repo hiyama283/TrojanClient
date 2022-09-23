@@ -76,13 +76,20 @@ public class TrapBurrowModule extends BaseModule {
         EventHandlers.register(this);
         step = 0;
         tryCount = 0;
+        toggledOn = false;
+        sneaked = false;
         ////////////////////////////////
-        if (onlyInHole.getValue() && !PositionUtils.isPlayerInHole()) {
-            setEnabled(false, "You are not in hole!");
+        if (burrowOnSneak.getValue()) {
             return;
         }
 
-        if (burrowOnSneak.getValue()) {
+        if (PlayerUtils.isPlayerInClip()) {
+            if (!burrowOnSneak.getValue()) setEnabled(false);
+            return;
+        }
+
+        if (onlyInHole.getValue() && (!PositionUtils.isPlayerInHole() && !PlayerUtils.isPlayerBurrow())) {
+            setEnabled(false, "You are not in hole!");
             return;
         }
 
@@ -105,6 +112,7 @@ public class TrapBurrowModule extends BaseModule {
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
         if (tryCount >= tryPlaceCount.getValue().getCurrent()) {
+            chatLog("Over try count.");
             if (burrowOnSneak.getValue()) {
                 toggledOn = false;
             } else {
@@ -119,8 +127,39 @@ public class TrapBurrowModule extends BaseModule {
                 return;
             }
             if (!toggledOn && !getPlayer().isSneaking()) return;
+
+            if (PlayerUtils.isPlayerBurrow()) {
+                chatLog("Successfully placed.");
+
+                if (onMoveBurrowed.getValue()) {
+                    BlockPos movePos = searchMovePos();
+                    PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
+                }
+
+                if (burrowOnSneak.getValue()) {
+                    toggledOn = false;
+                    step = 0;
+                    tryCount = 0;
+                    return;
+                }
+
+                setEnabled(false);
+                return;
+            }
+
+            if (onlyInHole.getValue() && (!PositionUtils.isPlayerInHole() && !PlayerUtils.isPlayerBurrow())) {
+                chatLog("You are not in hole!");
+                toggledOn = false;
+                sneaked = true;
+                step = 0;
+                tryCount = 0;
+                return;
+            }
+
             toggledOn = true;
             sneaked = true;
+            step = 0;
+            tryCount = 0;
         }
 
         if (PlayerUtils.isPlayerBurrow()) {
@@ -133,12 +172,16 @@ public class TrapBurrowModule extends BaseModule {
 
             if (burrowOnSneak.getValue()) {
                 toggledOn = false;
+                step = 0;
+                tryCount = 0;
                 return;
             }
 
             setEnabled(false);
             return;
         }
+
+        if (PlayerUtils.isPlayerInClip()) return;
 
         if (Objects.isNull(InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.OBSIDIAN), InventoryType.values()))) {
             setEnabled(false, "Cannot find trap door.");
@@ -193,9 +236,9 @@ public class TrapBurrowModule extends BaseModule {
 
                 tryCount++;
                 if (!r) {
-                    if (burrowOnSneak.getValue()) {
-                        toggledOn = false;
-                    }
+                    toggledOn = false;
+
+                    if (burrowOnSneak.getValue()) return;
 
                     setEnabled(false);
                 } else if (antiGhostBlock.getValue())
