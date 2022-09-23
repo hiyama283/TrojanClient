@@ -189,6 +189,18 @@ public class TrapBurrowModule extends BaseModule {
         }
 
         BlockPos playerPos = new BlockPos(mc.player);
+
+        if (onlyInHole.getValue()) {
+            BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(),
+                    packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
+
+            if (onMoveBurrowed.getValue()) {
+                BlockPos movePos = searchMovePos();
+                PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
+            }
+            return;
+        }
+
         BlockPos downSidePos = playerPos.add(EnumFacing.NORTH.getDirectionVec()).add(0, -1, 0);
         BlockPos sidePos = playerPos.add(EnumFacing.NORTH.getDirectionVec());
 
