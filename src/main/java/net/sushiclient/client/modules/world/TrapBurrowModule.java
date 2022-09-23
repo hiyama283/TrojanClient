@@ -6,6 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.sushiclient.client.config.Config;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
@@ -29,6 +30,7 @@ public class TrapBurrowModule extends BaseModule {
     private final Configuration<Boolean> placeAssistBlock;
     private final Configuration<Boolean> antiGhostBlock;
     private final Configuration<Boolean> onMoveBurrowed;
+    private final Configuration<Boolean> burrowOnSneak;
     private int step;
     public TrapBurrowModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
@@ -38,7 +40,8 @@ public class TrapBurrowModule extends BaseModule {
         onlyInHole = provider.get("only_in_hole", "Only in hole", null, Boolean.class, true);
         placeAssistBlock = provider.get("place_assist_block", "Place assist block", null, Boolean.class, true);
         antiGhostBlock = provider.get("anti_ghost_block", "Anti ghost block", null, Boolean.class, true);
-        onMoveBurrowed = provider.get("on_move_burrowed", "On move burrowed", "What is this", Boolean.class, false);
+        onMoveBurrowed = provider.get("on_burrow_move", "On burrow move", "What is this", Boolean.class, false);
+        burrowOnSneak = provider.get("burrow_on_sneak", "Burrow on sneak", "Best config", Boolean.class, false);
     }
 
     private BlockPos searchMovePos() {
@@ -77,6 +80,10 @@ public class TrapBurrowModule extends BaseModule {
             return;
         }
 
+        if (burrowOnSneak.getValue()) {
+            return;
+        }
+
         if (!placeAssistBlock.getValue() || onlyInHole.getValue() || PositionUtils.isPlayerInHole() ||
             !BlockUtils.isAir(getWorld(), getPlayer().getPosition().add(EnumFacing.NORTH.getDirectionVec()))) {
 
@@ -90,15 +97,32 @@ public class TrapBurrowModule extends BaseModule {
             setEnabled(false);
         }
     }
-    
+
+    private boolean toggledOn;
+    private boolean sneaked;
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
+        if (burrowOnSneak.getValue()) {
+            if (sneaked) {
+                if (!getPlayer().isSneaking()) sneaked = false;
+                return;
+            }
+            if (!toggledOn && !getPlayer().isSneaking()) return;
+            toggledOn = true;
+            sneaked = true;
+        }
+
         if (PlayerUtils.isPlayerBurrow()) {
             chatLog("Successfully placed.");
 
             if (onMoveBurrowed.getValue()) {
                 BlockPos movePos = searchMovePos();
                 PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
+            }
+
+            if (burrowOnSneak.getValue()) {
+                toggledOn = false;
+                return;
             }
 
             setEnabled(false);
@@ -155,6 +179,10 @@ public class TrapBurrowModule extends BaseModule {
                         packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
 
                 if (!r) {
+                    if (burrowOnSneak.getValue()) {
+                        toggledOn = false;
+                    }
+
                     setEnabled(false);
                 } else if (antiGhostBlock.getValue())
                     BlockUtils.checkGhostBlock(playerPos);
