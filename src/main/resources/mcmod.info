@@ -3,7 +3,7 @@
     "modid": "sushi",
     "name": "Shark Sushi",
     "description": "An utility client for anarchy servers",
-    "version": "0.3",
+    "version": "0.4",
     "mcversion": "1.12.2",
     "url": "https://toshimichi.net",
     "authorList": [

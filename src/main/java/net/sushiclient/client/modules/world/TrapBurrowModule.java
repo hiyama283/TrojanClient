@@ -6,7 +6,6 @@ import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.sushiclient.client.config.Config;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
@@ -17,7 +16,6 @@ import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.tick.ClientTickEvent;
 import net.sushiclient.client.modules.*;
 import net.sushiclient.client.utils.player.*;
-import net.sushiclient.client.utils.world.BlockPlaceInfo;
 import net.sushiclient.client.utils.world.BlockUtils;
 
 import java.util.Objects;
@@ -31,6 +29,8 @@ public class TrapBurrowModule extends BaseModule {
     private final Configuration<Boolean> antiGhostBlock;
     private final Configuration<Boolean> onMoveBurrowed;
     private final Configuration<Boolean> burrowOnSneak;
+    private final Configuration<IntRange> tryPlaceCount;
+    private int tryCount;
     private int step;
     public TrapBurrowModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
@@ -42,6 +42,7 @@ public class TrapBurrowModule extends BaseModule {
         antiGhostBlock = provider.get("anti_ghost_block", "Anti ghost block", null, Boolean.class, true);
         onMoveBurrowed = provider.get("on_burrow_move", "On burrow move", "What is this", Boolean.class, false);
         burrowOnSneak = provider.get("burrow_on_sneak", "Burrow on sneak", "Best config", Boolean.class, false);
+        tryPlaceCount = provider.get("try_place_count", "Try place count", null, IntRange.class, new IntRange(20, 10, 3, 1));
     }
 
     private BlockPos searchMovePos() {
@@ -74,6 +75,7 @@ public class TrapBurrowModule extends BaseModule {
     public void onEnable() {
         EventHandlers.register(this);
         step = 0;
+        tryCount = 0;
         ////////////////////////////////
         if (onlyInHole.getValue() && !PositionUtils.isPlayerInHole()) {
             setEnabled(false, "You are not in hole!");
@@ -102,6 +104,15 @@ public class TrapBurrowModule extends BaseModule {
     private boolean sneaked;
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
+        if (tryCount >= tryPlaceCount.getValue().getCurrent()) {
+            if (burrowOnSneak.getValue()) {
+                toggledOn = false;
+            } else {
+                setEnabled(false);
+            }
+            return;
+        }
+
         if (burrowOnSneak.getValue()) {
             if (sneaked) {
                 if (!getPlayer().isSneaking()) sneaked = false;
@@ -159,6 +170,7 @@ public class TrapBurrowModule extends BaseModule {
                         BlockUtils.lowArgPlace(downSidePos, packetPlace.getValue(), placeHand.getValue());
                         if (antiGhostBlock.getValue()) BlockUtils.checkGhostBlock(downSidePos);
                     });
+                    tryCount++;
                 }
                 break;
             case 1:
@@ -172,12 +184,14 @@ public class TrapBurrowModule extends BaseModule {
                         BlockUtils.lowArgPlace(sidePos, packetPlace.getValue(), placeHand.getValue());
                         if (antiGhostBlock.getValue()) BlockUtils.checkGhostBlock(sidePos);
                     });
+                    tryCount++;
                 }
                 break;
             case 2:
                 boolean r = BurrowUtils.burrow(BurrowLogType.ERROR, false, onlyInHole.getValue(),
                         packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
 
+                tryCount++;
                 if (!r) {
                     if (burrowOnSneak.getValue()) {
                         toggledOn = false;
