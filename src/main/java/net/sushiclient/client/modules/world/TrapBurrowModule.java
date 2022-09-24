@@ -17,6 +17,7 @@ import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.tick.ClientTickEvent;
 import net.sushiclient.client.modules.*;
 import net.sushiclient.client.modules.movement.PhaseWalkRewriteModule;
+import net.sushiclient.client.utils.EntityUtils;
 import net.sushiclient.client.utils.player.*;
 import net.sushiclient.client.utils.world.BlockUtils;
 
@@ -32,7 +33,7 @@ public class TrapBurrowModule extends BaseModule {
     private final Configuration<Boolean> onMoveBurrowed;
     private final Configuration<Boolean> burrowOnSneak;
     private final Configuration<IntRange> tryPlaceCount;
-    private final Configuration<Boolean> pauseOnTrueSneakFlag;
+    private final Configuration<Boolean> pausePhaseWalkOnBurrowed;
     private int tryCount;
     private int step;
     public TrapBurrowModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
@@ -47,7 +48,8 @@ public class TrapBurrowModule extends BaseModule {
         burrowOnSneak = provider.get("burrow_on_sneak", "Burrow on sneak", "Best config", Boolean.class, false);
         tryPlaceCount = provider.get("try_place_count", "Try place count", null, IntRange.class,
                 new IntRange(20, 10, 3, 1));
-        pauseOnTrueSneakFlag = provider.get("pause_on_true_sneak_flag", "Pause on true sneak flag", "Pause sneakedFlag = true", Boolean.class, false);
+        pausePhaseWalkOnBurrowed = provider.get("pause_phase_walk_on_burrowed", "Pause phasewalk on burrowed", "Pause on burrowed", Boolean.class,
+                false, burrowOnSneak::getValue, false, 0);
     }
 
     private BlockPos searchMovePos() {
@@ -121,9 +123,10 @@ public class TrapBurrowModule extends BaseModule {
 
     private boolean toggledOn;
     private boolean sneaked;
+    private boolean burrowed;
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
-        if (pauseOnTrueSneakFlag.getValue()) pausePhaseWalkRewrite(sneaked);
+        if (pausePhaseWalkOnBurrowed.getValue()) pausePhaseWalkRewrite(burrowed);
 
         if (tryCount >= tryPlaceCount.getValue().getCurrent()) {
             chatLog("Over try count.");
@@ -137,8 +140,17 @@ public class TrapBurrowModule extends BaseModule {
 
         if (burrowOnSneak.getValue()) {
             if (sneaked) {
-                if (!getPlayer().isSneaking()) sneaked = false;
-                return;
+                if (!getPlayer().isSneaking()) {
+                    sneaked = false;
+                } else
+                    return;
+            }
+
+            if (burrowed) {
+                if (!getPlayer().isSneaking()) {
+                    burrowed = false;
+                } else
+                    return;
             }
 
             if (PlayerUtils.isPlayerBurrow() && toggledOn) {
@@ -151,6 +163,7 @@ public class TrapBurrowModule extends BaseModule {
 
                 if (burrowOnSneak.getValue()) {
                     toggledOn = false;
+                    burrowed = true;
                     step = 0;
                     tryCount = 0;
                     return;
@@ -162,7 +175,7 @@ public class TrapBurrowModule extends BaseModule {
 
             if (!toggledOn && !getPlayer().isSneaking()) return;
 
-            if (onlyInHole.getValue() && (!PositionUtils.isPlayerInHole() && !PlayerUtils.isPlayerBurrow())) {
+            if (onlyInHole.getValue() && (!PositionUtils.isPlayerInHole() && !EntityUtils.isInsideBlock(getPlayer()))) {
                 chatLog("You are not in hole!");
                 toggledOn = false;
                 sneaked = true;
