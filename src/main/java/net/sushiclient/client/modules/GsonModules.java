@@ -110,6 +110,7 @@ public class GsonModules implements Modules {
         addModuleFactory("refill", RefillModule::new, true);
         addModuleFactory("silent_close", SilentCloseModule::new, true);
         addModuleFactory("timer", TimerModule::new, true);
+        addModuleFactory("announcer", AnnouncerModule::new, true);
 
         // World
         addModuleFactory("anti_ghost_block", AntiGhostBlockModule::new, true);

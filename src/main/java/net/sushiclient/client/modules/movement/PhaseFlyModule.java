@@ -58,7 +58,7 @@ public class PhaseFlyModule extends BaseModule {
         EventHandlers.register(this);
         if (onStartBurrow.getValue()) {
             BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(), packetPlace.getValue(),
-                    0.2, placeHand.getValue());
+                    0.2, placeHand.getValue(), false);
         }
 
         for (Module m : Sushi.getProfile().getModules().getAll()) {
@@ -130,6 +130,7 @@ public class PhaseFlyModule extends BaseModule {
     public void onPlayerPacket(PlayerPacketEvent e) {
         if (!auto.getValue()) return;
         EntityPlayerSP player = Minecraft.getMinecraft().player;
+
         if (stage == 0 &&
                 (getPlayer().movementInput.sneak || EntityUtils.isInsideBlock(getPlayer()) ||
                         !EntityUtils.isInsideBlock(getPlayer()) && !EntityUtils.isHittingRoof(getPlayer()))) return;

@@ -1,13 +1,18 @@
 package net.sushiclient.client.modules.combat;
 
 import net.minecraft.entity.item.EntityEnderCrystal;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemSword;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
 import net.sushiclient.client.events.EventHandler;
 import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
+import net.sushiclient.client.events.input.ClickType;
+import net.sushiclient.client.events.input.MousePressEvent;
+import net.sushiclient.client.events.input.MouseReleaseEvent;
 import net.sushiclient.client.events.tick.ClientTickEvent;
 import net.sushiclient.client.modules.*;
 import net.sushiclient.client.utils.EntityInfo;
@@ -22,7 +27,8 @@ public class OffhandModule extends BaseModule {
     private final Configuration<SwitchTarget> defaultItem;
     private final Configuration<DoubleRange> totemHelth;
     private final Configuration<Boolean> crystalCheck;
-    //    private final Configuration<Boolean> rightClickGap;
+    private final Configuration<Boolean> swordGap;
+    private final Configuration<Boolean> rightClickGap;
 //    private final Configuration<Boolean> fallCheck;
     private final Configuration<Boolean> totemOnElytra;
     private final Configuration<Boolean> preferInventory;
@@ -32,7 +38,8 @@ public class OffhandModule extends BaseModule {
         defaultItem = provider.get("default_item", "Default Item", null, SwitchTarget.class, SwitchTarget.TOTEM);
         totemHelth = provider.get("totem_health", "Totem Health", null, DoubleRange.class, new DoubleRange(5, 20, 0, 0.1, 1));
         crystalCheck = provider.get("crystal_check", "Crystal Check", null, Boolean.class, true);
-//        rightClickGap = provider.get("right_click_gapple", "Right Click Gappple", null, Boolean.class, true);
+        swordGap = provider.get("sword_gapple", "Sword gap", null, Boolean.class, false);
+        rightClickGap = provider.get("right_click_gapple", "Right click gapple", null, Boolean.class, true);
 //        fallCheck = provider.get("fall_check", "Fall Check", null, Boolean.class, true);
         totemOnElytra = provider.get("totem_on_elytra", "Totem On Elytra", null, Boolean.class, true);
         preferInventory = provider.get("prefer_inventory", "Prefer Inventory", null, Boolean.class, true);
@@ -61,6 +68,7 @@ public class OffhandModule extends BaseModule {
         return max;
     }
 
+    private boolean rightPress = false;
     public SwitchTarget getSwitchTarget() {
         if (totemOnElytra.getValue() && getPlayer().isElytraFlying()) {
             return SwitchTarget.TOTEM;
@@ -68,6 +76,10 @@ public class OffhandModule extends BaseModule {
             return SwitchTarget.TOTEM;
         } else if (crystalCheck.getValue() && getHealth() - getCrystalDamage() < totemHelth.getValue().getCurrent()) {
             return SwitchTarget.TOTEM;
+        } else if (swordGap.getValue() && (ItemSlot.current().getItemStack().getItem() == Items.DIAMOND_SWORD)) {
+            return SwitchTarget.GAPPLE;
+        } else if (rightClickGap.getValue() && rightPress && ItemSlot.current().getItemStack().getItem() == Items.DIAMOND_SWORD) {
+            return SwitchTarget.GAPPLE;
         }
 
         return defaultItem.getValue();
@@ -97,6 +109,20 @@ public class OffhandModule extends BaseModule {
             return;
         }
         InventoryUtils.moveTo(itemSlot, ItemSlot.offhand());
+    }
+
+    @EventHandler(timing = EventTiming.PRE)
+    public void onRightClickPress(MousePressEvent e) {
+        if (e.getClickType() != ClickType.RIGHT) return;
+        // chatLog("Pressed");
+        rightPress = true;
+    }
+
+    @EventHandler(timing = EventTiming.PRE)
+    public void onRightClickRelease(MouseReleaseEvent e) {
+        if (e.getClickType() != ClickType.RIGHT) return;
+        // chatLog("Release");
+        rightPress = false;
     }
 
     @Override

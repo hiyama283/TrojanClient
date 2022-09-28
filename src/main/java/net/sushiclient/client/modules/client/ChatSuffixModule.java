@@ -13,6 +13,7 @@ import net.sushiclient.client.events.packet.PacketSendEvent;
 import net.sushiclient.client.modules.*;
 
 import java.io.IOException;
+import java.util.Random;
 
 public class ChatSuffixModule extends BaseModule {
 
@@ -23,12 +24,14 @@ public class ChatSuffixModule extends BaseModule {
     private final Configuration<String> suffix;
     private final Configuration<String> commandPrefixes;
     private final Configuration<IntRange> mode;
+    private final Configuration<Boolean> antiSpam;
 
     public ChatSuffixModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         suffix = provider.get("suffix", "Suffix", null, String.class, " | shark-s");
         commandPrefixes = provider.get("command_prefixes", "Command Prefixes", null, String.class, "/ #");
         mode = provider.get("mode", "Mode", null, IntRange.class, new IntRange(0, 2, 0, 1));
+        antiSpam = provider.get("antispam", "Anti spam", null, Boolean.class, true);
     }
 
     @Override
@@ -89,6 +92,10 @@ public class ChatSuffixModule extends BaseModule {
         if (isCommand(text)) return;
 
         text += convert(suffix.getValue(), getASCII());
+
+        if (antiSpam.getValue())
+            text += " [" + Integer.toString(new Random().nextInt(10000), 36) + "]";
+
         text = text.substring(0, Math.min(text.length(), 256));
 
         buff.clear();

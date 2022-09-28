@@ -1,11 +1,14 @@
 package net.sushiclient.client.modules.world;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.Sushi;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
@@ -33,7 +36,7 @@ public class TrapBurrowModule extends BaseModule {
     private final Configuration<Boolean> onMoveBurrowed;
     private final Configuration<Boolean> burrowOnSneak;
     private final Configuration<IntRange> tryPlaceCount;
-    private final Configuration<Boolean> pausePhaseWalkOnBurrowed;
+    private final Configuration<Boolean> faceObsidian;
     private int tryCount;
     private int step;
     public TrapBurrowModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
@@ -48,8 +51,7 @@ public class TrapBurrowModule extends BaseModule {
         burrowOnSneak = provider.get("burrow_on_sneak", "Burrow on sneak", "Best config", Boolean.class, false);
         tryPlaceCount = provider.get("try_place_count", "Try place count", null, IntRange.class,
                 new IntRange(20, 10, 3, 1));
-        pausePhaseWalkOnBurrowed = provider.get("pause_phase_walk_on_burrowed", "Pause phasewalk on burrowed", "Pause on burrowed", Boolean.class,
-                false, burrowOnSneak::getValue, false, 0);
+        faceObsidian = provider.get("face_obsidian", "Face obsidian", null, Boolean.class, false);
     }
 
     private BlockPos searchMovePos() {
@@ -66,16 +68,14 @@ public class TrapBurrowModule extends BaseModule {
                 new BlockPos(0, -1, 0),
         };
 
-        BlockPos tpPos = null;
         for (BlockPos offset : offsets) {
             BlockPos addPos = pos.add(offset);
             if (BlockUtils.getBlock(addPos) != Blocks.AIR) {
-                tpPos = addPos;
+                return addPos;
             }
         }
 
-        if (Objects.isNull(tpPos)) return pos;
-        return tpPos;
+        return null;
     }
 
     private void pausePhaseWalkRewrite(boolean b) {
@@ -111,10 +111,12 @@ public class TrapBurrowModule extends BaseModule {
             !BlockUtils.isAir(getWorld(), getPlayer().getPosition().add(EnumFacing.NORTH.getDirectionVec()))) {
 
             BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(),
-                    packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
+                    packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue(), faceObsidian.getValue());
 
             if (onMoveBurrowed.getValue()) {
                 BlockPos movePos = searchMovePos();
+                if (movePos == null) return;
+
                 PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
             }
             setEnabled(false);
@@ -123,11 +125,8 @@ public class TrapBurrowModule extends BaseModule {
 
     private boolean toggledOn;
     private boolean sneaked;
-    private boolean burrowed;
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
-        if (pausePhaseWalkOnBurrowed.getValue()) pausePhaseWalkRewrite(burrowed);
-
         if (tryCount >= tryPlaceCount.getValue().getCurrent()) {
             chatLog("Over try count.");
             if (burrowOnSneak.getValue()) {
@@ -146,24 +145,18 @@ public class TrapBurrowModule extends BaseModule {
                     return;
             }
 
-            if (burrowed) {
-                if (!getPlayer().isSneaking()) {
-                    burrowed = false;
-                } else
-                    return;
-            }
-
             if (PlayerUtils.isPlayerBurrow() && toggledOn) {
                 chatLog("Successfully placed.");
 
                 if (onMoveBurrowed.getValue()) {
                     BlockPos movePos = searchMovePos();
+                    if (movePos == null) return;
+
                     PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
                 }
 
                 if (burrowOnSneak.getValue()) {
                     toggledOn = false;
-                    burrowed = true;
                     step = 0;
                     tryCount = 0;
                     return;
@@ -196,6 +189,8 @@ public class TrapBurrowModule extends BaseModule {
 
             if (onMoveBurrowed.getValue()) {
                 BlockPos movePos = searchMovePos();
+                if (movePos == null) return;
+
                 PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
             }
 
@@ -221,10 +216,11 @@ public class TrapBurrowModule extends BaseModule {
 
         if (onlyInHole.getValue()) {
             BurrowUtils.burrow(BurrowLogType.ERROR, false, onlyInHole.getValue(),
-                    packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
+                    packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue(), faceObsidian.getValue());
 
             if (onMoveBurrowed.getValue()) {
-                BlockPos movePos = searchMovePos();
+                BlockPos movePos = PlayerUtils.getPlayerPos(getPlayer()).add(0, -1, 0);
+
                 PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
             }
             return;
@@ -273,7 +269,7 @@ public class TrapBurrowModule extends BaseModule {
                 break;
             case 2:
                 boolean r = BurrowUtils.burrow(BurrowLogType.ERROR, false, onlyInHole.getValue(),
-                        packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue());
+                        packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue(), faceObsidian.getValue());
 
                 tryCount++;
                 if (!r) {

@@ -72,4 +72,8 @@ public class PlayerUtils {
     private static BlockPos getEntityPos(Entity e) {
         return new BlockPos(e.posX, e.posY, e.posZ);
     }
+
+    public static BlockPos getPlayerPos(EntityPlayerSP player) {
+        return BlockUtils.toBlockPos(player.getPositionVector());
+    }
 }

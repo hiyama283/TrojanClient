@@ -32,9 +32,6 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     private final Configuration<Boolean> shiftLimit;
     private final Configuration<Boolean> voidSafe;
     private final Configuration<IntRange> voidY;
-    private final Configuration<Boolean> checkTerrain;
-    private final Configuration<Boolean> checkTerrainUp;
-    private final Configuration<Boolean> checkTerrainDown;
     private boolean suffix;
     private boolean sneakedFlag;
     private boolean jumpedFlag;
@@ -52,11 +49,6 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
         voidSafe = provider.get("void_safe", "Void safe", null, Boolean.class, true);
         voidY = provider.get("void_y", "Void y", null, IntRange.class, new IntRange(60, 65, -1, 1),
                 voidSafe::getValue, false, 0);
-        checkTerrain = provider.get("check_terrain", "Check terrain", null, Boolean.class, false);
-        checkTerrainUp = provider.get("check_terrain_up", "Check terrain up", null, Boolean.class, false,
-                checkTerrain::getValue, false, 0);
-        checkTerrainDown = provider.get("check_terrain_down", "Check terrain down", null, Boolean.class, false,
-                checkTerrain::getValue, false, 0);
     }
 
     private boolean paused = false;
@@ -92,28 +84,6 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
 
             // chatLog("Input X:" + inputs.x + " Y:" + inputs.y + " Z:" + inputs.z);
             suffix = true;
-            if (shiftLimit.getValue() && sneakedFlag && !getPlayer().isSneaking())
-                sneakedFlag = false;
-            if (jumpLimit.getValue() && jumpedFlag && inputs.y == 0)
-                jumpedFlag = false;
-
-            if (checkTerrain.getValue()) {
-                if (checkTerrainUp.getValue()) {
-                    if (BlockUtils.getBlock(player.getPosition()
-                            .add(0, 1, 0)) != Blocks.AIR) {
-                        PositionUtils.move(player.posX, player.posY + 1, player.posZ, 0, 0, false, PositionMask.POSITION);
-                    }
-                }
-
-                if (checkTerrainDown.getValue()) {
-                    Vec2f vec = MovementUtils.toWorld(new Vec2f((float) inputs.x, (float) inputs.z), player.rotationYaw);
-
-                    if (BlockUtils.getBlock(player.getPosition().add(vec.x, 0, vec.y)) == Blocks.AIR) {
-                        PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
-                    }
-                }
-            }
-
 
             player.motionX = 0;
             player.motionY = 0;
@@ -147,7 +117,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
             player.motionY = 0;
             player.motionZ = vec.y;
 
-            if (player.isSneaking()) {
+            if (getPlayer().movementInput.sneak) {
                 if (shiftLimit.getValue()) {
                     if (!sneakedFlag) {
                         if (voidSafe.getValue() && player.posY - 1 <= voidY.getValue().getCurrent()) return;
@@ -156,13 +126,18 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
                 } else
                     PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
                 sneakedFlag = true;
-            } else if (inputs.y > 0) {
+            } else if(sneakedFlag) {
+                sneakedFlag = false;
+            }
+            if (getPlayer().movementInput.jump) {
                 if (jumpLimit.getValue()) {
                     if (!jumpedFlag)
                         PositionUtils.move(player.posX, player.posY + 1, player.posZ, 0, 0, false, PositionMask.POSITION);
                 } else
                     PositionUtils.move(player.posX, player.posY + 1, player.posZ, 0, 0, false, PositionMask.POSITION);
                 jumpedFlag = true;
+            } else if(jumpedFlag) {
+                jumpedFlag = false;
             }
 
         } else {

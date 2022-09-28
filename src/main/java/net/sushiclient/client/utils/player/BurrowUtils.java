@@ -16,6 +16,7 @@ import net.sushiclient.client.Sushi;
 import net.sushiclient.client.command.LogLevel;
 import net.sushiclient.client.modules.Module;
 import net.sushiclient.client.modules.client.DebugModule;
+import net.sushiclient.client.utils.HWID;
 import net.sushiclient.client.utils.world.BlockUtils;
 
 public class BurrowUtils {
@@ -37,29 +38,29 @@ public class BurrowUtils {
         Sushi.getProfile().getLogger().send(LogLevel.INFO, message);
     }
 
-    private static void error(String message) {
-        Sushi.getProfile().getLogger().send(LogLevel.ERROR, message);
+    private static void error(String message, boolean showError) {
+        if (showError) Sushi.getProfile().getLogger().send(LogLevel.ERROR, message);
     }
 
     public static boolean burrow(BurrowLogType logType, boolean noBurrowOnShift, boolean onlyInHole,
-                              boolean packetPlace, Double moveOffset, EnumHand hand) {
-        return burrow(logType.getShowError(), logType.getShowSuccess(), noBurrowOnShift, onlyInHole, packetPlace, moveOffset, hand);
+                              boolean packetPlace, Double moveOffset, EnumHand hand, boolean faceObsidian) {
+        return burrow(logType.getShowError(), logType.getShowSuccess(), noBurrowOnShift, onlyInHole, packetPlace, moveOffset, hand, faceObsidian);
     }
 
     public static boolean burrow(boolean showError, boolean showSuccessful, boolean noBurrowOnShift, boolean onlyInHole,
-                              boolean packetPlace, Double moveOffset, EnumHand hand) {
+                              boolean packetPlace, Double moveOffset, EnumHand hand, boolean faceObsidian) {
         Minecraft mc = Minecraft.getMinecraft();
         if (PlayerUtils.isPlayerBurrow() || noBurrowOnShift && mc.player.isSneaking())
             return true;
 
         if (!PositionUtils.isPlayerInHole() && onlyInHole) {
-            if (showError) error("You are not in hole!");
+            error("You are not in hole!", showError);
             return false;
         }
 
         ItemSlot slot = InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.IRON_TRAPDOOR), InventoryType.HOTBAR);
         if (slot == null) {
-            if (showError) error("Cannot find iron trapdoor.");
+            error("Cannot find iron trapdoor.", showError);
             return false;
         }
 
@@ -79,7 +80,7 @@ public class BurrowUtils {
         }
 
         if (trapPos == null) {
-            if (showError) info("No trapdoor space.");
+            error("No trapdoor space.", showError);
             return false;
         }
 
@@ -97,7 +98,7 @@ public class BurrowUtils {
         }
 
         if (facing == null) {
-            if (showError) info("Facing not found.");
+            error("Facing not found.", showError);
             return false;
         }
 
@@ -108,6 +109,28 @@ public class BurrowUtils {
         });
 
         sendPacket(new CPacketPlayer.Position(x, y, z, mc.player.onGround));
+
+        if (faceObsidian) {
+            sendPacket(new CPacketPlayer.Position(x , y- 1 , z , mc.player.onGround));
+            ItemSlot obbSlot = InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.OBSIDIAN), InventoryType.HOTBAR);
+            if (obbSlot == null) {
+                error("Cannot find obsidian!", showError);
+                return false;
+            }
+
+            EnumFacing findFacing = null;
+            for (EnumFacing value : EnumFacing.values()) {
+                if (BlockUtils.getBlock(playerPos.add(0, 1, 0).add(value.getDirectionVec())) != Blocks.AIR)
+                    findFacing = value;
+            }
+
+            if (findFacing == null) findFacing = EnumFacing.DOWN;
+
+            EnumFacing finalFindFacing = findFacing;
+            InventoryUtils.silentSwitch(packetPlace, obbSlot.getIndex(), () -> {
+                BlockUtils.rightClickBlock(playerPos, finalFindFacing, new Vec3d(0.5 , 0.8 , 0.5), packetPlace, hand);
+            });
+        }
 
         if (showSuccessful) {
             info("Successfully trap placed.");
