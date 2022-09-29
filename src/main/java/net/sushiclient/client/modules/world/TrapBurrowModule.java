@@ -1,14 +1,11 @@
 package net.sushiclient.client.modules.world;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.Sushi;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
@@ -26,7 +23,7 @@ import net.sushiclient.client.utils.world.BlockUtils;
 
 import java.util.Objects;
 
-public class TrapBurrowModule extends BaseModule {
+public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
     private final Configuration<DoubleRange> offset;
     private final Configuration<Boolean> packetPlace;
     private final Configuration<EnumHand> placeHand;
@@ -123,14 +120,23 @@ public class TrapBurrowModule extends BaseModule {
         }
     }
 
+    private void chgTryCount(int i) {
+        // chatLog("Before:" + i);
+        tryCount = i;
+        // chatLog("After:" + i);
+    }
+
     private boolean toggledOn;
     private boolean sneaked;
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
         if (tryCount >= tryPlaceCount.getValue().getCurrent()) {
             chatLog("Over try count.");
+
             if (burrowOnSneak.getValue()) {
                 toggledOn = false;
+                step = 0;
+                chgTryCount(0);
             } else {
                 setEnabled(false);
             }
@@ -158,7 +164,7 @@ public class TrapBurrowModule extends BaseModule {
                 if (burrowOnSneak.getValue()) {
                     toggledOn = false;
                     step = 0;
-                    tryCount = 0;
+                    chgTryCount(0);
                     return;
                 }
 
@@ -173,15 +179,18 @@ public class TrapBurrowModule extends BaseModule {
                 toggledOn = false;
                 sneaked = true;
                 step = 0;
-                tryCount = 0;
+                chgTryCount(0);
                 return;
             }
 
             if (PlayerUtils.isPlayerInClip()) return;
-            toggledOn = true;
-            sneaked = true;
-            step = 0;
-            tryCount = 0;
+
+            if (!toggledOn) {
+                toggledOn = true;
+                sneaked = true;
+                step = 0;
+                chgTryCount(0);
+            }
         }
 
         if (PlayerUtils.isPlayerBurrow()) {
@@ -197,7 +206,7 @@ public class TrapBurrowModule extends BaseModule {
             if (burrowOnSneak.getValue()) {
                 toggledOn = false;
                 step = 0;
-                tryCount = 0;
+                chgTryCount(0);
                 return;
             }
 
@@ -217,12 +226,7 @@ public class TrapBurrowModule extends BaseModule {
         if (onlyInHole.getValue()) {
             BurrowUtils.burrow(BurrowLogType.ERROR, false, onlyInHole.getValue(),
                     packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue(), faceObsidian.getValue());
-
-            if (onMoveBurrowed.getValue()) {
-                BlockPos movePos = PlayerUtils.getPlayerPos(getPlayer()).add(0, -1, 0);
-
-                PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
-            }
+            chgTryCount(tryCount + 1);
             return;
         }
 
@@ -237,6 +241,7 @@ public class TrapBurrowModule extends BaseModule {
             step = 2;
 
         ItemSlot obsidianSlot = InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.OBSIDIAN), InventoryType.values());
+        chgTryCount(tryCount + 1);
         switch (step) {
             case 0:
                 if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
@@ -250,7 +255,6 @@ public class TrapBurrowModule extends BaseModule {
                         BlockUtils.lowArgPlace(downSidePos, packetPlace.getValue(), placeHand.getValue());
                         if (antiGhostBlock.getValue()) BlockUtils.checkGhostBlock(downSidePos);
                     });
-                    tryCount++;
                 }
                 break;
             case 1:
@@ -264,14 +268,12 @@ public class TrapBurrowModule extends BaseModule {
                         BlockUtils.lowArgPlace(sidePos, packetPlace.getValue(), placeHand.getValue());
                         if (antiGhostBlock.getValue()) BlockUtils.checkGhostBlock(sidePos);
                     });
-                    tryCount++;
                 }
                 break;
             case 2:
                 boolean r = BurrowUtils.burrow(BurrowLogType.ERROR, false, onlyInHole.getValue(),
                         packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue(), faceObsidian.getValue());
 
-                tryCount++;
                 if (!r) {
                     toggledOn = false;
 
@@ -298,5 +300,17 @@ public class TrapBurrowModule extends BaseModule {
     @Override
     public Category getDefaultCategory() {
         return Category.WORLD;
+    }
+
+    @Override
+    public String getSuffix() {
+        if (!burrowOnSneak.getValue()) return null;
+
+        if (PlayerUtils.isPlayerInClip()) {
+            return "Clipping! cant place";
+        } else if (toggledOn) {
+            return "On step=" + step + " try=" + tryCount;
+        } else
+            return "No places";
     }
 }

@@ -1,6 +1,5 @@
 package net.sushiclient.client.utils.player;
 
-import net.minecraft.block.BlockAir;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;

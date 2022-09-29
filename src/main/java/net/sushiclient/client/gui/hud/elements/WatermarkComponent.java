@@ -12,7 +12,7 @@ public class WatermarkComponent extends TextElementComponent {
 
     @Override
     protected String getText() {
-        return ModInformation.name + "-" + ModInformation.version + " " + HWID.getHWID();
+        return ModInformation.name + "-" + ModInformation.version;
     }
 
     @Override

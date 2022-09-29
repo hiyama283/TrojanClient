@@ -4,7 +4,6 @@ import net.minecraft.block.BlockAir;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketPlayer;
@@ -16,7 +15,6 @@ import net.sushiclient.client.Sushi;
 import net.sushiclient.client.command.LogLevel;
 import net.sushiclient.client.modules.Module;
 import net.sushiclient.client.modules.client.DebugModule;
-import net.sushiclient.client.utils.HWID;
 import net.sushiclient.client.utils.world.BlockUtils;
 
 public class BurrowUtils {

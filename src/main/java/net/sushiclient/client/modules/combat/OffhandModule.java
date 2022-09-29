@@ -3,7 +3,6 @@ package net.sushiclient.client.modules.combat;
 import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemSword;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
@@ -68,6 +67,11 @@ public class OffhandModule extends BaseModule {
         return max;
     }
 
+    private boolean isItemValid(SwitchTarget target) {
+        ItemSlot slot = InventoryUtils.findItemSlot(target.getItem(), InventoryType.MAIN, InventoryType.HOTBAR, InventoryType.OFFHAND);
+        return slot != null;
+    }
+
     private boolean rightPress = false;
     public SwitchTarget getSwitchTarget() {
         if (totemOnElytra.getValue() && getPlayer().isElytraFlying()) {
@@ -76,13 +80,18 @@ public class OffhandModule extends BaseModule {
             return SwitchTarget.TOTEM;
         } else if (crystalCheck.getValue() && getHealth() - getCrystalDamage() < totemHelth.getValue().getCurrent()) {
             return SwitchTarget.TOTEM;
-        } else if (swordGap.getValue() && (ItemSlot.current().getItemStack().getItem() == Items.DIAMOND_SWORD)) {
+        } else if (swordGap.getValue() && (ItemSlot.current().getItemStack().getItem() == Items.DIAMOND_SWORD) && isItemValid(SwitchTarget.GAPPLE)) {
             return SwitchTarget.GAPPLE;
-        } else if (rightClickGap.getValue() && rightPress && ItemSlot.current().getItemStack().getItem() == Items.DIAMOND_SWORD) {
+        } else if (rightClickGap.getValue() && rightPress && ItemSlot.current().getItemStack().getItem() == Items.DIAMOND_SWORD && isItemValid(SwitchTarget.GAPPLE)) {
             return SwitchTarget.GAPPLE;
         }
 
-        return defaultItem.getValue();
+        if (defaultItem.getValue() == SwitchTarget.TOTEM) return SwitchTarget.TOTEM;
+
+        if (isItemValid(defaultItem.getValue()))
+            return defaultItem.getValue();
+        else
+            return SwitchTarget.TOTEM;
     }
 
     public SwitchTarget getCurrent() {

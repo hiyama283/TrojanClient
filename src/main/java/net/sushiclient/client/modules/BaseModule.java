@@ -6,6 +6,7 @@ import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.Packet;
+import net.minecraft.util.text.TextFormatting;
 import net.sushiclient.client.Sushi;
 import net.sushiclient.client.command.LogLevel;
 import net.sushiclient.client.command.Logger;
@@ -15,7 +16,6 @@ import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.gui.hud.ElementConstructor;
 import net.sushiclient.client.gui.hud.ElementFactory;
 import net.sushiclient.client.modules.client.DebugModule;
-import net.sushiclient.client.modules.movement.SpeedModule;
 
 import java.util.ArrayList;
 
@@ -108,16 +108,18 @@ abstract public class BaseModule implements Module {
                 this.enabled = true;
                 handlers.forEach(it -> it.setEnabled(true));
                 onEnable();
-                if (toggleNotification.getValue()) {
-                    handler.send(LogLevel.INFO, "Enabled " + getName());
-                }
+                // if (toggleNotification.getValue()) {
+                handler.send(LogLevel.INFO, TextFormatting.GREEN + "Enabled " + TextFormatting.RESET
+                        + TextFormatting.BOLD + getName() + TextFormatting.RESET);
+                // }
             } else if (this.enabled && !enabled) {
                 this.enabled = false;
                 handlers.forEach(it -> it.setEnabled(false));
                 onDisable();
-                if (toggleNotification.getValue()) {
-                    handler.send(LogLevel.INFO, "Disabled " + getName());
-                }
+                // if (toggleNotification.getValue()) {
+                handler.send(LogLevel.INFO, TextFormatting.RED + "Disabled " + TextFormatting.RESET
+                        + TextFormatting.BOLD + getName() + TextFormatting.RESET);
+                // }
             }
         }
     }

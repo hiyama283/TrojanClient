@@ -1,8 +1,6 @@
 package net.sushiclient.client.modules.player;
 
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.play.server.SPacketEntityStatus;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;

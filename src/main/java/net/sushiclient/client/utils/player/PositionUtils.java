@@ -7,7 +7,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.mixin.AccessorEntityPlayerSP;
-import net.sushiclient.client.utils.render.hole.HoleUtils;
 import net.sushiclient.client.utils.world.BlockPlaceInfo;
 import net.sushiclient.client.utils.world.BlockUtils;
 

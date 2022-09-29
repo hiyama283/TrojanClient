@@ -3,7 +3,6 @@ package net.sushiclient.client.mixin;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.network.play.server.SPacketEntityStatus;
 import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.render.EntityRenderEvent;

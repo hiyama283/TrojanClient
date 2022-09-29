@@ -2,7 +2,6 @@ package net.sushiclient.client.modules.movement;
 
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.Sushi;

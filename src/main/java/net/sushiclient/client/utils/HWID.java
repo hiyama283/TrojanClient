@@ -6,7 +6,7 @@ public class HWID {
 
     /**
      *
-     * @return HWID in MD5;
+     * @return HWID in SHA-224;
      *
      */
 
@@ -17,7 +17,7 @@ public class HWID {
                     System.getenv("PROCESSOR_IDENTIFIER") +
                     System.getenv("PROCESSOR_LEVEL") +
                     System.getenv("PROCESSOR_REVISION");
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance("SHA-224");
             md.update(toEncrypt.getBytes());
             StringBuilder hexString = new StringBuilder();
 

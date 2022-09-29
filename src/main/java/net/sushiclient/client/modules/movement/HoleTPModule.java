@@ -14,7 +14,6 @@ import net.sushiclient.client.utils.world.BlockUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 public class HoleTPModule extends BaseModule {

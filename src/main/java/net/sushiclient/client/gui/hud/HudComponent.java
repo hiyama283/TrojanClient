@@ -8,6 +8,7 @@ import net.sushiclient.client.gui.Component;
 import net.sushiclient.client.gui.Origin;
 import net.sushiclient.client.gui.base.BasePanelComponent;
 import net.sushiclient.client.gui.hud.elements.*;
+import net.sushiclient.client.gui.hud.elements.counter.*;
 import net.sushiclient.client.modules.Module;
 import net.sushiclient.client.utils.render.GuiUtils;
 
@@ -33,6 +34,13 @@ public class HudComponent extends BasePanelComponent<HudElementComponent> {
         addElement(TpsComponent::new, "tps", "TPS");
         addElement(SpeedComponent::new, "speed", "Speed");
         addElement(WatermarkComponent::new, "watermark", "Watermark");
+        addElement(CrystalCountComponent::new, "crystal_count_component", "CrystalCountComponent");
+        addElement(GappleCountComponent::new, "gapple_count_component", "GappleCountComponent");
+        addElement(TotemCountComponent::new, "totem_count_component", "TotemCountComponent");
+        addElement(ObsidianCountComponent::new, "obsidian_count_component", "ObsidianCountComponent");
+        addElement(ExpCountComponent::new, "exp_count_component", "ExpCountComponent");
+        addElement(TrueDurabilityComponent::new, "true_durability_component", "TrueDurabilityComponent");
+        addElement(ArmorWarningComponent::new, "armor_warning_component", "ArmorWarningComponent");
     }
 
     private void addVirtual(VirtualHudElementComponent component) {
