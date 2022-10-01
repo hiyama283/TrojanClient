@@ -3,9 +3,9 @@ package net.sushiclient.client.gui.hud.elements.counter;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.sushiclient.client.config.Configurations;
-import net.sushiclient.client.gui.hud.BaseItemCounterComponent;
+import net.sushiclient.client.gui.hud.BaseItemTextCounterComponent;
 
-public class CrystalCountComponent extends BaseItemCounterComponent {
+public class CrystalCountComponent extends BaseItemTextCounterComponent {
     public CrystalCountComponent(Configurations configurations, String id, String name) {
         super(configurations, id, name);
     }

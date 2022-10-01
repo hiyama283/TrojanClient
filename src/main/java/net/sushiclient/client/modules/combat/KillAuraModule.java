@@ -4,6 +4,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.Vec3d;
+import net.sushiclient.client.command.LogLevel;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.ConfigurationCategory;
 import net.sushiclient.client.config.RootConfigurations;
@@ -19,10 +20,7 @@ import net.sushiclient.client.utils.EntityInfo;
 import net.sushiclient.client.utils.EntityType;
 import net.sushiclient.client.utils.EntityUtils;
 import net.sushiclient.client.utils.ReachType;
-import net.sushiclient.client.utils.player.CloseablePositionOperator;
-import net.sushiclient.client.utils.player.InventoryUtils;
-import net.sushiclient.client.utils.player.PositionMask;
-import net.sushiclient.client.utils.player.PositionUtils;
+import net.sushiclient.client.utils.player.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,6 +41,7 @@ public class KillAuraModule extends BaseModule {
     private final Configuration<DoubleRange> selfPingMultiplier;
     private final Configuration<Boolean> useInputs;
     private final Configuration<Boolean> constantSpeed;
+    private final Configuration<SwingHand> swingMode;
     private CloseablePositionOperator operator;
 
     public KillAuraModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
@@ -69,6 +68,9 @@ public class KillAuraModule extends BaseModule {
         selfPingMultiplier = predict.get("self_ping_multiplier", "Self Multiplier", null, DoubleRange.class, new DoubleRange(1, 10, 0, 0.1, 1));
         useInputs = predict.get("use_inputs", "Use Inputs", null, Boolean.class, true);
         constantSpeed = predict.get("constant_speed", "Constant Speed", null, Boolean.class, true);
+
+        ConfigurationCategory attack = provider.getCategory("attack", "Attack Settings", null);
+        swingMode = attack.get("swing_hand", "Swing hand", null, SwingHand.class, SwingHand.MAIN);
     }
 
     @Override
@@ -91,6 +93,7 @@ public class KillAuraModule extends BaseModule {
             operator = null;
             return;
         }
+
         ArrayList<EntityLivingBase> players = new ArrayList<>();
         EntityLivingBase dying = null;
         for (EntityInfo<EntityLivingBase> info : EntityUtils.getNearbyEntities(getPlayer().getPositionVector(), EntityLivingBase.class)) {
@@ -128,6 +131,7 @@ public class KillAuraModule extends BaseModule {
             operator = null;
             return;
         }
+
         TaskExecutor.newTaskChain()
                 .supply(() -> InventoryUtils.findBestWeapon(true, preferAxe.getValue()))
                 .then(new ItemSlotSwitchTask())
@@ -136,10 +140,8 @@ public class KillAuraModule extends BaseModule {
         operator.desyncMode(PositionMask.LOOK);
         operator.lookAt(target.getPositionVector().add(0, target.getEyeHeight(), 0));
         if (getPlayer().getCooledAttackStrength(0) > 0.9) {
-            PositionUtils.on(() -> {
-                getController().attackEntity(getPlayer(), target);
-                getPlayer().swingArm(EnumHand.MAIN_HAND);
-            });
+            getController().attackEntity(getPlayer(), target);
+            swingMode.getValue().swing();
         }
     }
 

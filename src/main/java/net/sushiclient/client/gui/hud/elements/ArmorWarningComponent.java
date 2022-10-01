@@ -15,11 +15,8 @@ import net.sushiclient.client.utils.player.ItemSlot;
 import java.util.ArrayList;
 
 public class ArmorWarningComponent extends TextElementComponent {
-    private final Configuration<IntRange> warnDurability;
     public ArmorWarningComponent(Configurations configurations, String id, String name) {
         super(configurations, id, name);
-        warnDurability = getConfiguration("warn_durability", "Warn durability", null, IntRange.class,
-                new IntRange(20, 50, 1, 1));
     }
 
     @Override
@@ -33,7 +30,7 @@ public class ArmorWarningComponent extends TextElementComponent {
 
         for (ItemStack item : items) {
             if (!(item.getItem() instanceof ItemArmor)) continue;
-            if (item.getMaxDamage() - item.getItemDamage() <= warnDurability.getValue().getCurrent())
+            if (item.getMaxDamage() * 0.5 < item.getItemDamage())
                 return TextFormatting.BOLD + TextFormatting.RED.toString() + "Armor low!" + TextFormatting.RESET;
         }
         return "Armor isnt low.";

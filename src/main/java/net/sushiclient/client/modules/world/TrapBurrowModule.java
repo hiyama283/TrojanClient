@@ -1,6 +1,7 @@
 package net.sushiclient.client.modules.world;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
@@ -51,8 +52,8 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         faceObsidian = provider.get("face_obsidian", "Face obsidian", null, Boolean.class, false);
     }
 
-    private BlockPos searchMovePos() {
-        BlockPos pos = getPlayer().getPosition();
+    private BlockPos searchMovePos(EntityPlayerSP playerSP) {
+        BlockPos pos = BlockUtils.toBlockPos(playerSP.getPositionVector());
         BlockPos[] offsets = {
                 new BlockPos(1, 0, 1),
                 new BlockPos(1, 0, 0),
@@ -111,10 +112,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
                     packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue(), faceObsidian.getValue());
 
             if (onMoveBurrowed.getValue()) {
-                BlockPos movePos = searchMovePos();
-                if (movePos == null) return;
-
-                PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
+                burrowOnMove(getPlayer());
             }
             setEnabled(false);
         }
@@ -124,6 +122,30 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         // chatLog("Before:" + i);
         tryCount = i;
         // chatLog("After:" + i);
+    }
+
+    private void burrowOnMove(EntityPlayerSP player) {
+        BlockPos movePos = searchMovePos(player);
+        if (movePos == null) return;
+
+        PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
+    }
+
+    private void onBurrowed() {
+        chatLog("Successfully placed.");
+
+        if (onMoveBurrowed.getValue()) {
+            burrowOnMove(getPlayer());
+        }
+
+        if (burrowOnSneak.getValue()) {
+            toggledOn = false;
+            step = 0;
+            chgTryCount(0);
+            return;
+        }
+
+        setEnabled(false);
     }
 
     private boolean toggledOn;
@@ -152,23 +174,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
             }
 
             if (PlayerUtils.isPlayerBurrow() && toggledOn) {
-                chatLog("Successfully placed.");
-
-                if (onMoveBurrowed.getValue()) {
-                    BlockPos movePos = searchMovePos();
-                    if (movePos == null) return;
-
-                    PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
-                }
-
-                if (burrowOnSneak.getValue()) {
-                    toggledOn = false;
-                    step = 0;
-                    chgTryCount(0);
-                    return;
-                }
-
-                setEnabled(false);
+                onBurrowed();
                 return;
             }
 
@@ -194,23 +200,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         }
 
         if (PlayerUtils.isPlayerBurrow()) {
-            chatLog("Successfully placed.");
-
-            if (onMoveBurrowed.getValue()) {
-                BlockPos movePos = searchMovePos();
-                if (movePos == null) return;
-
-                PositionUtils.move(movePos.getX(), movePos.getY(), movePos.getZ(), 0, 0, getPlayer().onGround, PositionMask.POSITION);
-            }
-
-            if (burrowOnSneak.getValue()) {
-                toggledOn = false;
-                step = 0;
-                chgTryCount(0);
-                return;
-            }
-
-            setEnabled(false);
+            onBurrowed();
             return;
         }
 
