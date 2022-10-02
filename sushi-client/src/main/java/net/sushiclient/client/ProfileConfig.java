@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 class ProfileConfig {
 
     @SerializedName("prefix")
-    private char prefix = '.';
+    private char prefix = '%';
     @SerializedName("version")
     private int version = Sushi.getVersion();
 

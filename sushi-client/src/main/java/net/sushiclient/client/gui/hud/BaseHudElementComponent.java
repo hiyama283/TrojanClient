@@ -55,8 +55,6 @@ abstract public class BaseHudElementComponent extends BaseComponent implements H
 
         TextPreview preview = GuiUtils.prepareText(String.valueOf(count), getTextSettings("text").getValue());
         preview.draw(getWindowX() + 13, getWindowY() + 9);
-        setWidth(preview.getWidth() + 3);
-        setHeight(preview.getHeight() + 4);
 
         GlStateManager.enableDepth();
         GlStateManager.disableLighting();

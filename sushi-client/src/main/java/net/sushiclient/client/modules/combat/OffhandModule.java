@@ -20,6 +20,7 @@ import net.sushiclient.client.utils.combat.DamageUtils;
 import net.sushiclient.client.utils.player.InventoryType;
 import net.sushiclient.client.utils.player.InventoryUtils;
 import net.sushiclient.client.utils.player.ItemSlot;
+import net.sushiclient.client.utils.player.PlayerUtils;
 
 public class OffhandModule extends BaseModule {
 
@@ -31,6 +32,8 @@ public class OffhandModule extends BaseModule {
 //    private final Configuration<Boolean> fallCheck;
     private final Configuration<Boolean> totemOnElytra;
     private final Configuration<Boolean> preferInventory;
+    private final Configuration<Boolean> switchPlayerIsNear;
+    private final Configuration<DoubleRange> switchRange;
 
     public OffhandModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
@@ -42,6 +45,9 @@ public class OffhandModule extends BaseModule {
 //        fallCheck = provider.get("fall_check", "Fall Check", null, Boolean.class, true);
         totemOnElytra = provider.get("totem_on_elytra", "Totem On Elytra", null, Boolean.class, true);
         preferInventory = provider.get("prefer_inventory", "Prefer Inventory", null, Boolean.class, true);
+        switchPlayerIsNear = provider.get("switch_player_is_near", "Switch player is near", null, Boolean.class, false);
+        switchRange = provider.get("switch_range", "Switch range", null, DoubleRange.class,
+                new DoubleRange(5, 10, 0.1, 0.1, 1), switchPlayerIsNear::getValue, false, 0);
     }
 
     @Override
@@ -78,15 +84,21 @@ public class OffhandModule extends BaseModule {
             return SwitchTarget.TOTEM;
         } else if (getHealth() < totemHelth.getValue().getCurrent()) {
             return SwitchTarget.TOTEM;
-        } else if (crystalCheck.getValue() && getHealth() - getCrystalDamage() < totemHelth.getValue().getCurrent()) {
+        } else if (crystalCheck.getValue() && getHealth() - getCrystalDamage()
+                < totemHelth.getValue().getCurrent()) {
             return SwitchTarget.TOTEM;
-        } else if (swordGap.getValue() && (ItemSlot.current().getItemStack().getItem() == Items.DIAMOND_SWORD) && isItemValid(SwitchTarget.GAPPLE)) {
+        } else if (swordGap.getValue() && (ItemSlot.current().getItemStack().getItem()
+                 == Items.DIAMOND_SWORD) && isItemValid(SwitchTarget.GAPPLE)) {
             return SwitchTarget.GAPPLE;
-        } else if (rightClickGap.getValue() && rightPress && ItemSlot.current().getItemStack().getItem() == Items.DIAMOND_SWORD && isItemValid(SwitchTarget.GAPPLE)) {
+        } else if (rightClickGap.getValue() && rightPress && ItemSlot.current().getItemStack()
+                .getItem() == Items.DIAMOND_SWORD && isItemValid(SwitchTarget.GAPPLE)) {
             return SwitchTarget.GAPPLE;
         }
 
+
         if (defaultItem.getValue() == SwitchTarget.TOTEM) return SwitchTarget.TOTEM;
+        if (switchPlayerIsNear.getValue() && EntityUtils.getNearbyPlayers(
+                switchRange.getValue().getCurrent()).size() == 0) return SwitchTarget.TOTEM;
 
         if (isItemValid(defaultItem.getValue()))
             return defaultItem.getValue();
