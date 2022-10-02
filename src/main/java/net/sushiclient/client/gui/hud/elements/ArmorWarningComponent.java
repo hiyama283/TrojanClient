@@ -7,16 +7,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.Configurations;
-import net.sushiclient.client.config.data.IntRange;
+import net.sushiclient.client.config.data.DoubleRange;
 import net.sushiclient.client.gui.hud.TextElementComponent;
-import net.sushiclient.client.utils.player.InventoryUtils;
-import net.sushiclient.client.utils.player.ItemSlot;
 
 import java.util.ArrayList;
 
 public class ArmorWarningComponent extends TextElementComponent {
+    private final Configuration<DoubleRange> warnPercent;
     public ArmorWarningComponent(Configurations configurations, String id, String name) {
         super(configurations, id, name);
+        warnPercent = getConfiguration("warn_percent", "Warn percent", null, DoubleRange.class,
+                new DoubleRange(0.5, 1.0, 0.1, 0.1, 1));
     }
 
     @Override
@@ -30,7 +31,7 @@ public class ArmorWarningComponent extends TextElementComponent {
 
         for (ItemStack item : items) {
             if (!(item.getItem() instanceof ItemArmor)) continue;
-            if (item.getMaxDamage() * 0.5 < item.getItemDamage())
+            if (item.getMaxDamage() * warnPercent.getValue().getCurrent() < item.getItemDamage())
                 return TextFormatting.BOLD + TextFormatting.RED.toString() + "Armor low!" + TextFormatting.RESET;
         }
         return "Armor isnt low.";

@@ -1,11 +1,19 @@
 package net.sushiclient.client.gui.hud;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.item.Item;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.Configurations;
 import net.sushiclient.client.config.data.EspColor;
 import net.sushiclient.client.gui.ComponentHandler;
 import net.sushiclient.client.gui.base.BaseComponent;
+import net.sushiclient.client.utils.player.InventoryType;
+import net.sushiclient.client.utils.player.InventoryUtils;
+import net.sushiclient.client.utils.player.ItemSlot;
 import net.sushiclient.client.utils.render.GuiUtils;
+import net.sushiclient.client.utils.render.TextPreview;
 import net.sushiclient.client.utils.render.TextSettings;
 
 import java.awt.*;
@@ -25,6 +33,33 @@ abstract public class BaseHudElementComponent extends BaseComponent implements H
         this.configurations = configurations;
         this.id = id;
         this.name = name;
+    }
+
+    protected void renderItem(Item item) {
+        RenderItem renderer = Minecraft.getMinecraft().getRenderItem();
+        GlStateManager.enableTexture2D();
+        GlStateManager.enableDepth();
+        renderer.zLevel = 200.0F;
+        renderer.renderItemAndEffectIntoGUI(item.getDefaultInstance(), (int) (getWindowX() + 1), (int) (getWindowY() + 1));
+        renderer.renderItemOverlays(Minecraft.getMinecraft().fontRenderer, item.getDefaultInstance(), (int) (getWindowX() + 1), (int) (getWindowY() + 1));
+        renderer.zLevel = 0.0F;
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableLighting();
+        GlStateManager.disableDepth();
+
+        ItemSlot[] items = InventoryUtils.findItemSlots(item, null, InventoryType.values());
+        int count = 0;
+        for (ItemSlot itemSlot : items) {
+            count += itemSlot.getItemStack().getCount();
+        }
+
+        TextPreview preview = GuiUtils.prepareText(String.valueOf(count), getTextSettings("text").getValue());
+        preview.draw(getWindowX() + 13, getWindowY() + 9);
+        setWidth(preview.getWidth() + 3);
+        setHeight(preview.getHeight() + 4);
+
+        GlStateManager.enableDepth();
+        GlStateManager.disableLighting();
     }
 
     protected <T> Configuration<T> getConfiguration(String id, String name, String description, Class<T> tClass, T def) {

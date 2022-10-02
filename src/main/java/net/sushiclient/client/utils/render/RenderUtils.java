@@ -6,11 +6,16 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.Item;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.mixin.AccessorEntityRenderer;
+import net.sushiclient.client.utils.player.InventoryType;
+import net.sushiclient.client.utils.player.InventoryUtils;
+import net.sushiclient.client.utils.player.ItemSlot;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector4f;
 

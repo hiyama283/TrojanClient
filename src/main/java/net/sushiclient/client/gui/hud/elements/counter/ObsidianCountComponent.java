@@ -4,9 +4,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.sushiclient.client.config.Configurations;
 import net.sushiclient.client.gui.hud.BaseItemCounterComponent;
-import net.sushiclient.client.gui.hud.BaseItemTextCounterComponent;
 
-public class ObsidianCountComponent extends BaseItemTextCounterComponent {
+public class ObsidianCountComponent extends BaseItemCounterComponent {
     public ObsidianCountComponent(Configurations configurations, String id, String name) {
         super(configurations, id, name);
     }
