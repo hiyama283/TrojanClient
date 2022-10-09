@@ -12,6 +12,7 @@ import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.input.ClickType;
 import net.sushiclient.client.events.input.MousePressEvent;
 import net.sushiclient.client.events.input.MouseReleaseEvent;
+import net.sushiclient.client.events.player.PlayerUpdateEvent;
 import net.sushiclient.client.events.tick.ClientTickEvent;
 import net.sushiclient.client.modules.*;
 import net.sushiclient.client.utils.EntityInfo;
@@ -20,7 +21,6 @@ import net.sushiclient.client.utils.combat.DamageUtils;
 import net.sushiclient.client.utils.player.InventoryType;
 import net.sushiclient.client.utils.player.InventoryUtils;
 import net.sushiclient.client.utils.player.ItemSlot;
-import net.sushiclient.client.utils.player.PlayerUtils;
 
 public class OffhandModule extends BaseModule {
 
@@ -34,6 +34,7 @@ public class OffhandModule extends BaseModule {
     private final Configuration<Boolean> preferInventory;
     private final Configuration<Boolean> switchPlayerIsNear;
     private final Configuration<DoubleRange> switchRange;
+    private final Configuration<Boolean> playerUpdate;
 
     public OffhandModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
@@ -48,6 +49,7 @@ public class OffhandModule extends BaseModule {
         switchPlayerIsNear = provider.get("switch_player_is_near", "Switch player is near", null, Boolean.class, false);
         switchRange = provider.get("switch_range", "Switch range", null, DoubleRange.class,
                 new DoubleRange(5, 10, 0.1, 0.1, 1), switchPlayerIsNear::getValue, false, 0);
+        playerUpdate = provider.get("player_update", "Player update", null, Boolean.class, true);
     }
 
     @Override
@@ -73,8 +75,8 @@ public class OffhandModule extends BaseModule {
         return max;
     }
 
-    private boolean isItemValid(SwitchTarget target) {
-        ItemSlot slot = InventoryUtils.findItemSlot(target.getItem(), InventoryType.MAIN, InventoryType.HOTBAR, InventoryType.OFFHAND);
+    private boolean isItemValid(Item target) {
+        ItemSlot slot = InventoryUtils.findItemSlot(target, InventoryType.MAIN, InventoryType.HOTBAR, InventoryType.OFFHAND);
         return slot != null;
     }
 
@@ -88,10 +90,10 @@ public class OffhandModule extends BaseModule {
                 < totemHelth.getValue().getCurrent()) {
             return SwitchTarget.TOTEM;
         } else if (swordGap.getValue() && (ItemSlot.current().getItemStack().getItem()
-                 == Items.DIAMOND_SWORD) && isItemValid(SwitchTarget.GAPPLE)) {
+                 == Items.DIAMOND_SWORD) && isItemValid(SwitchTarget.GAPPLE.getItem())) {
             return SwitchTarget.GAPPLE;
         } else if (rightClickGap.getValue() && rightPress && ItemSlot.current().getItemStack()
-                .getItem() == Items.DIAMOND_SWORD && isItemValid(SwitchTarget.GAPPLE)) {
+                .getItem() == Items.DIAMOND_SWORD && isItemValid(SwitchTarget.GAPPLE.getItem())) {
             return SwitchTarget.GAPPLE;
         }
 
@@ -100,7 +102,7 @@ public class OffhandModule extends BaseModule {
         if (switchPlayerIsNear.getValue() && EntityUtils.getNearbyPlayers(
                 switchRange.getValue().getCurrent()).size() == 0) return SwitchTarget.TOTEM;
 
-        if (isItemValid(defaultItem.getValue()))
+        if (isItemValid(defaultItem.getValue().getItem()))
             return defaultItem.getValue();
         else
             return SwitchTarget.TOTEM;
@@ -116,6 +118,17 @@ public class OffhandModule extends BaseModule {
 
     @EventHandler(timing = EventTiming.POST)
     public void onClientTick(ClientTickEvent e) {
+        if (playerUpdate.getValue()) return;
+        switching();
+    }
+
+    @EventHandler(timing = EventTiming.POST)
+    public void onPlayerUpdate(PlayerUpdateEvent e) {
+        if (!playerUpdate.getValue()) return;
+        switching();
+    }
+
+    private void switching() {
         SwitchTarget target = getSwitchTarget();
         SwitchTarget current = getCurrent();
         if (target == current) return;

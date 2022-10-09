@@ -6,16 +6,11 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.mixin.AccessorEntityRenderer;
-import net.sushiclient.client.utils.player.InventoryType;
-import net.sushiclient.client.utils.player.InventoryUtils;
-import net.sushiclient.client.utils.player.ItemSlot;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector4f;
 
@@ -184,5 +179,34 @@ public class RenderUtils {
         vertex(builder, box.minX - d.x, box.maxY - d.y, box.maxZ - d.z);
         tessellator.draw();
         release3D();
+    }
+
+    public static void drawBox(RenderBuilder renderBuilder) {
+        final Minecraft mc = Minecraft.getMinecraft();
+
+        // check if the viewing entity exists
+        if (mc.getRenderViewEntity() != null) {
+
+            // render bounding box
+            AxisAlignedBB axisAlignedBB = renderBuilder.getAxisAlignedBB()
+                    .offset(-mc.getRenderManager().viewerPosX, -mc.getRenderManager().viewerPosY, -mc.getRenderManager().viewerPosZ);
+
+            // draw box
+            switch (renderBuilder.getBox()) {
+                case FILL:
+                    drawFilled(renderBuilder.getAxisAlignedBB(), renderBuilder.getColor());
+                    break;
+                case OUTLINE:
+                    drawOutline(renderBuilder.getAxisAlignedBB(), renderBuilder.getColor(), renderBuilder.getWidth());
+                    break;
+                case BOTH:
+                    drawFilled(renderBuilder.getAxisAlignedBB(), renderBuilder.getColor());
+                    drawOutline(renderBuilder.getAxisAlignedBB(), renderBuilder.getColor(), renderBuilder.getWidth());
+                    break;
+            }
+
+            // build the render
+            renderBuilder.build();
+        }
     }
 }

@@ -3,6 +3,7 @@ package net.sushiclient.client.utils.player;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.math.BlockPos;
@@ -50,8 +51,8 @@ public class PlayerUtils {
         }
     }
 
-    public static boolean isPlayerBurrow(EntityPlayerSP playerSP) {
-        BlockPos pos = getEntityPos(playerSP);
+    public static boolean isPlayerBurrow(EntityPlayer player) {
+        BlockPos pos = getEntityPos(player);
         return BlockUtils.getBlock(pos) != Blocks.AIR;
     }
 
@@ -59,8 +60,8 @@ public class PlayerUtils {
         return isPlayerBurrow(mc.player);
     }
 
-    public static boolean isPlayerInClip(EntityPlayerSP playerSP) {
-        BlockPos pos = getEntityPos(playerSP);
+    public static boolean isPlayerInClip(EntityPlayer player) {
+        BlockPos pos = getEntityPos(player);
         return BlockUtils.getBlock(pos) != Blocks.AIR || BlockUtils.getBlock(pos.add(0, 1, 0)) != Blocks.AIR;
     }
 
@@ -72,7 +73,7 @@ public class PlayerUtils {
         return new BlockPos(e.posX, e.posY, e.posZ);
     }
 
-    public static BlockPos getPlayerPos(EntityPlayerSP player) {
+    public static BlockPos getPlayerPos(EntityPlayer player) {
         return BlockUtils.toBlockPos(player.getPositionVector());
     }
 }

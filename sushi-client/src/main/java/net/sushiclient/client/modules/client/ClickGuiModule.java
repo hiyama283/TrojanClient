@@ -1,9 +1,11 @@
 package net.sushiclient.client.modules.client;
 
 import net.minecraft.client.Minecraft;
+import net.sushiclient.client.ModInformation;
 import net.sushiclient.client.Sushi;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
+import net.sushiclient.client.config.data.Named;
 import net.sushiclient.client.gui.Component;
 import net.sushiclient.client.gui.ComponentContext;
 import net.sushiclient.client.gui.Components;
@@ -13,15 +15,32 @@ import net.sushiclient.client.utils.render.GuiUtils;
 import org.lwjgl.input.Keyboard;
 
 public class ClickGuiModule extends BaseModule {
+    public enum Names implements Named {
+        TROJAN("Trojan"), SHARK_SUSHI("Shark Sushi")
+        ;
+        private final String name;
+        Names(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return this.name;
+        }
+    }
 
     private final Theme fallbackTheme;
     private final Configuration<String> theme;
+    private final Configuration<Names> nameMode;
     private ComponentContext<Component> context;
 
     public ClickGuiModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         fallbackTheme = Sushi.getDefaultTheme();
         theme = provider.get("theme", "Theme", "ClickGUI Theme", String.class, fallbackTheme.getId());
+        nameMode = provider.get("name_mode", "Name mode", null, Names.class, Names.TROJAN);
+        nameMode.addHandler(value -> ModInformation.name = value.getName());
+        ModInformation.name = nameMode.getValue().getName();
         // prepare font for SimpleClickGui (for performance reasons)
         // maybe ugly but this should not cause bugs
         getTheme().newClickGui(this);

@@ -35,7 +35,7 @@ abstract public class BaseHudElementComponent extends BaseComponent implements H
         this.name = name;
     }
 
-    protected void renderItem(Item item) {
+    protected void renderItem(Item item, boolean showCount) {
         RenderItem renderer = Minecraft.getMinecraft().getRenderItem();
         GlStateManager.enableTexture2D();
         GlStateManager.enableDepth();
@@ -47,17 +47,19 @@ abstract public class BaseHudElementComponent extends BaseComponent implements H
         GlStateManager.disableLighting();
         GlStateManager.disableDepth();
 
-        ItemSlot[] items = InventoryUtils.findItemSlots(item, null, InventoryType.values());
-        int count = 0;
-        for (ItemSlot itemSlot : items) {
-            count += itemSlot.getItemStack().getCount();
+        if (showCount) {
+            ItemSlot[] items = InventoryUtils.findItemSlots(item, null, InventoryType.values());
+            int count = 0;
+            for (ItemSlot itemSlot : items) {
+                count += itemSlot.getItemStack().getCount();
+            }
+
+            TextPreview preview = GuiUtils.prepareText(String.valueOf(count), getTextSettings("text").getValue());
+            preview.draw(getWindowX() + 13, getWindowY() + 9);
+
+            GlStateManager.enableDepth();
+            GlStateManager.disableLighting();
         }
-
-        TextPreview preview = GuiUtils.prepareText(String.valueOf(count), getTextSettings("text").getValue());
-        preview.draw(getWindowX() + 13, getWindowY() + 9);
-
-        GlStateManager.enableDepth();
-        GlStateManager.disableLighting();
     }
 
     protected <T> Configuration<T> getConfiguration(String id, String name, String description, Class<T> tClass, T def) {

@@ -54,6 +54,10 @@ public class PositionUtils {
         return onGround;
     }
 
+    public static BlockPos toBlockPos(Vec3d vec3d) {
+        return new BlockPos(vec3d.x, vec3d.y, vec3d.z);
+    }
+
     public static void update() {
         EntityPlayerSP player = Minecraft.getMinecraft().player;
         double x = player.posX;

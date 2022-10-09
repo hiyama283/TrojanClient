@@ -3,6 +3,7 @@ package net.sushiclient.client.modules.client;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.client.CPacketChatMessage;
+import net.sushiclient.client.ModInformation;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.IntRange;
@@ -28,7 +29,8 @@ public class ChatSuffixModule extends BaseModule {
 
     public ChatSuffixModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
-        suffix = provider.get("suffix", "Suffix", null, String.class, " | shark-s");
+        suffix = provider.get("suffix", "Suffix", null, String.class,
+                " | " + ModInformation.name + "-" + ModInformation.version);
         commandPrefixes = provider.get("command_prefixes", "Command Prefixes", null, String.class, "/ #");
         mode = provider.get("mode", "Mode", null, IntRange.class, new IntRange(0, 2, 0, 1));
         antiSpam = provider.get("antispam", "Anti spam", null, Boolean.class, true);

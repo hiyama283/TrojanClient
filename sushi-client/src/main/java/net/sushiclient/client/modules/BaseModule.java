@@ -16,6 +16,8 @@ import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.gui.hud.ElementConstructor;
 import net.sushiclient.client.gui.hud.ElementFactory;
 import net.sushiclient.client.modules.client.DebugModule;
+import net.sushiclient.client.utils.elements.sound.BreakSound;
+import net.sushiclient.client.utils.elements.sound.ClickSound;
 
 import java.util.ArrayList;
 
@@ -107,18 +109,24 @@ abstract public class BaseModule implements Module {
             if (!this.enabled && enabled) {
                 this.enabled = true;
                 handlers.forEach(it -> it.setEnabled(true));
-                onEnable();
-                // if (toggleNotification.getValue()) {
                 handler.send(LogLevel.INFO, TextFormatting.GREEN + "Enabled " + TextFormatting.RESET
                         + TextFormatting.BOLD + getName() + TextFormatting.RESET);
+
+                // new Thread(() -> mc.getSoundHandler().playSound(ClickSound.sound)).start();
+
+                onEnable();
+                // if (toggleNotification.getValue()) {
                 // }
             } else if (this.enabled && !enabled) {
                 this.enabled = false;
                 handlers.forEach(it -> it.setEnabled(false));
-                onDisable();
-                // if (toggleNotification.getValue()) {
                 handler.send(LogLevel.INFO, TextFormatting.RED + "Disabled " + TextFormatting.RESET
                         + TextFormatting.BOLD + getName() + TextFormatting.RESET);
+
+                // new Thread(() -> mc.getSoundHandler().playSound(BreakSound.sound)).start();
+
+                onDisable();
+                // if (toggleNotification.getValue()) {
                 // }
             }
         }

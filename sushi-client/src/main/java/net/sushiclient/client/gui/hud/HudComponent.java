@@ -34,13 +34,14 @@ public class HudComponent extends BasePanelComponent<HudElementComponent> {
         addElement(TpsComponent::new, "tps", "TPS");
         addElement(SpeedComponent::new, "speed", "Speed");
         addElement(WatermarkComponent::new, "watermark", "Watermark");
-        addElement(CrystalCountComponent::new, "crystal_count_component", "CrystalCountComponent");
-        addElement(GappleCountComponent::new, "gapple_count_component", "GappleCountComponent");
-        addElement(TotemCountComponent::new, "totem_count_component", "TotemCountComponent");
-        addElement(ObsidianCountComponent::new, "obsidian_count_component", "ObsidianCountComponent");
-        addElement(ExpCountComponent::new, "exp_count_component", "ExpCountComponent");
-        addElement(TrueDurabilityComponent::new, "true_durability_component", "TrueDurabilityComponent");
-        addElement(ArmorWarningComponent::new, "armor_warning_component", "ArmorWarningComponent");
+        addElement(CrystalCountComponent::new, "crystal_count_component", "CrystalCount");
+        addElement(GappleCountComponent::new, "gapple_count_component", "GappleCount");
+        addElement(TotemCountComponent::new, "totem_count_component", "TotemCount");
+        addElement(ObsidianCountComponent::new, "obsidian_count_component", "ObsidianCount");
+        addElement(ExpCountComponent::new, "exp_count_component", "ExpCount");
+        addElement(TrueDurabilityComponent::new, "true_durability_component", "TrueDurability");
+        addElement(ArmorWarningComponent::new, "armor_warning_component", "ArmorWarning");
+        addElement(TextRaderComponent::new, "text_rader_component", "TextRader");
     }
 
     private void addVirtual(VirtualHudElementComponent component) {

@@ -93,6 +93,7 @@ public class GsonModules implements Modules {
         addModuleFactory("search", SearchModule::new, true);
         addModuleFactory("storage_esp", StorageEspModule::new, true);
         addModuleFactory("tracers", TracersModule::new, true);
+        addModuleFactory("burrow_esp", BurrowESPModule::new, true);
 
         // Player
         addModuleFactory("anti_hunger", AntiHungerModule::new, true);
@@ -111,6 +112,7 @@ public class GsonModules implements Modules {
         addModuleFactory("silent_close", SilentCloseModule::new, true);
         addModuleFactory("timer", TimerModule::new, true);
         addModuleFactory("announcer", AnnouncerModule::new, true);
+        addModuleFactory("cleaner", CleanerModule::new, true);
 
         // World
         addModuleFactory("anti_ghost_block", AntiGhostBlockModule::new, true);

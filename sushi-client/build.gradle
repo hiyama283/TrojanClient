@@ -13,7 +13,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-archivesBaseName = 'Trojan-0.5'
+archivesBaseName = 'Trojan-0.5.1'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 

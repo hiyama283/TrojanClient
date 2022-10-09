@@ -4,8 +4,9 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.*;
 import net.sushiclient.client.account.EncryptedMojangAccounts;
 import net.sushiclient.client.account.MojangAccounts;
 import net.sushiclient.client.command.Commands;
@@ -15,22 +16,29 @@ import net.sushiclient.client.config.GsonRootConfigurations;
 import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.client.WorldLoadEvent;
+import net.sushiclient.client.gui.hud.elements.TextRaderComponent;
 import net.sushiclient.client.gui.theme.Theme;
 import net.sushiclient.client.gui.theme.simple.SimpleTheme;
 import net.sushiclient.client.handlers.*;
 import net.sushiclient.client.handlers.forge.*;
+import net.sushiclient.client.utils.HWID;
 import net.sushiclient.client.utils.gson.ColorTypeAdapter;
 import net.sushiclient.client.utils.gson.EnumFactory;
 import org.apache.commons.io.FileUtils;
+import org.lwjgl.opengl.Display;
 
+import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SushiInitializer implements Initializer {
 
@@ -68,8 +76,40 @@ public class SushiInitializer implements Initializer {
         return func.apply(conf);
     }
 
+    private void hwidProtection(String url, String title, String message) {
+        String s1 = HWID.getHWID();
+
+        try (InputStream in = new URL(url).openStream()) {
+            InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(in));
+            Stream<String> streamOfString = new BufferedReader(inputStreamReader).lines();
+            String response = streamOfString.collect(Collectors.joining("\n"));
+
+            if (!(response.contains(s1))) {
+                Minecraft mc = Minecraft.getMinecraft();
+                mc.shutdown();
+
+                UIManager.put("OptionPane.minimumSize", new Dimension(500, 80));
+                JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+                System.exit(0);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void construct(FMLConstructionEvent event) {
+        Sushi.log4j.info("Construct init");
+    }
+
+    @Override
+    public void preInit(FMLPreInitializationEvent event) {
+        Sushi.log4j.info("Pre init");
+    }
+
     @Override
     public void init(FMLInitializationEvent event) {
+        Sushi.log4j.info("init");
         // load config
         try {
             String contents = FileUtils.readFileToString(modConfigFile, StandardCharsets.UTF_8);
@@ -77,11 +117,13 @@ public class SushiInitializer implements Initializer {
         } catch (IOException e) {
             modConfig = new ModConfig();
         }
+        Sushi.log4j.info("Config loaded");
 
         // add themes
         ArrayList<Theme> themes = new ArrayList<>();
         Theme fallbackTheme = loadTheme(new File(themeDir, "simple.json"), SimpleTheme::new);
         themes.add(fallbackTheme);
+        Sushi.log4j.info("Theme pre loaded");
 
         for (Theme theme : Sushi.getThemes()) {
             if (theme.getId().equals(modConfig.getTheme())) {
@@ -91,6 +133,7 @@ public class SushiInitializer implements Initializer {
         }
         Sushi.setThemes(themes);
         Sushi.setDefaultTheme(fallbackTheme);
+        Sushi.log4j.info("Theme loaded");
 
         // load profile
         GsonProfiles profiles = new GsonProfiles(new File(baseDir, "profiles"), gson);
@@ -98,6 +141,7 @@ public class SushiInitializer implements Initializer {
         Sushi.setProfiles(profiles);
         Sushi.setProfile(profile);
         profile.load();
+        Sushi.log4j.info("Loaded profile");
 
         // set accounts
         MojangAccounts accounts = new EncryptedMojangAccounts(new File(baseDir, "accounts.txt"));
@@ -134,6 +178,7 @@ public class SushiInitializer implements Initializer {
         EventHandlers.register(new SilentSwitchHandler());
         EventHandlers.register(new PositionPacketHandler());
         EventHandlers.register(this);
+        Sushi.log4j.info("Handler registered");
 
         Commands.register(new HelpCommand());
         Commands.register(new ToggleCommand());
@@ -146,7 +191,22 @@ public class SushiInitializer implements Initializer {
         Commands.register(new RestoreCommand());
         Commands.register(new HClipCommand());
         Commands.register(new VClipCommand());
+        Commands.register(new PeekCommand());
         Commands.register(this, new SetCommand());
+        Sushi.log4j.info("Command registered");
+
+    }
+
+    @Override
+    public void postInit(FMLPostInitializationEvent event) {
+        Sushi.log4j.info("Post init");
+    }
+
+    @Override
+    public void complete(FMLLoadCompleteEvent event) {
+        Sushi.log4j.info("Completed!");
+        Display.setTitle(ModInformation.name + "-" + ModInformation.version);
+        Sushi.log4j.info("Title set");
     }
 
     @net.sushiclient.client.events.EventHandler(timing = EventTiming.PRE)

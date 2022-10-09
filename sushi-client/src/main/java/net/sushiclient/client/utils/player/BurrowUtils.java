@@ -103,7 +103,7 @@ public class BurrowUtils {
         BlockPos finalTrapPos = trapPos;
         EnumFacing finalFacing = facing;
         InventoryUtils.silentSwitch(packetPlace, slot.getIndex(), () -> {
-            BlockUtils.rightClickBlock(finalTrapPos, finalFacing, new Vec3d(0.5 , 0.8 , 0.5), packetPlace, hand);
+            BlockUtils.rightClickBlock(finalTrapPos, finalFacing, new Vec3d(0.5 , 0.8 , 0.5), true, hand);
         });
 
         sendPacket(new CPacketPlayer.Position(x, y, z, mc.player.onGround));
