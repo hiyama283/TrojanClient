@@ -4,6 +4,7 @@
   "package": "net.sushiclient.client.mixin",
   "refmap": "mixins.sushi.refmap.json",
   "client": [
+    "accessor.IPlayerControllerMP",
     "AccessorChunkProviderClient",
     "AccessorEntityPlayerSP",
     "AccessorEntityRenderer",

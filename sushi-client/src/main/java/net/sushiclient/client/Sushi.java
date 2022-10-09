@@ -2,6 +2,7 @@ package net.sushiclient.client;
 
 import net.sushiclient.client.account.MojangAccounts;
 import net.sushiclient.client.gui.theme.Theme;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,8 @@ public class Sushi {
     private static Theme defaultTheme;
     private static final List<Theme> themes = new ArrayList<>();
     private static MojangAccounts mojangAccounts;
+
+    public static final org.apache.logging.log4j.Logger log4j = LogManager.getLogger(ModInformation.name);
 
     public static int getVersion() {
         return 0;

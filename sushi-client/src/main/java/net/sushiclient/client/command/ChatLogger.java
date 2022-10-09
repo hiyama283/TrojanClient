@@ -4,6 +4,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
+import net.sushiclient.client.ModInformation;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import static net.minecraft.util.text.TextFormatting.*;
 
@@ -15,7 +19,7 @@ public class ChatLogger implements Logger {
         else if (level == LogLevel.ERROR) color = RED;
         else color = WHITE;
 
-        String txt = GRAY + "[" + AQUA + "Shark Sushi" + GRAY + "] " + color + message;
+        String txt = GRAY + "[" + AQUA + ModInformation.name + "-" + ModInformation.version + GRAY + "] " + color + message;
         Minecraft.getMinecraft().ingameGUI.addChatMessage(ChatType.CHAT, new TextComponentString(txt));
     }
 }

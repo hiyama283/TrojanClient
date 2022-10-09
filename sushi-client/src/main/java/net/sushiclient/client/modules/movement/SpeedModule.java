@@ -36,7 +36,7 @@ public class SpeedModule extends BaseModule {
         super(id, modules, categories, provider, factory);
         mode = provider.get("mode", "Mode", null, SpeedMode.class, SpeedMode.STRAFE);
         multiplier = provider.get("multiplier", "Multiplier", null, DoubleRange.class,
-                new DoubleRange(1.5, 5, 0.1, 0.05, 2), () -> mode.getValue() == SpeedMode.VANILLA, false, 0);
+                new DoubleRange(1.5, 5, 0.1, 0.05, 2));
         forceSprint = provider.get("force_sprint", "Force Sprint", null, Boolean.class, true);
         enableOnJump = provider.get("enable_on_jump", "Enable On Jump", null, Boolean.class, false);
         resetMotion = provider.get("reset_motion", "Reset Motion", null, Boolean.class, true);
@@ -125,6 +125,10 @@ public class SpeedModule extends BaseModule {
             }
             getPlayer().motionX = motion.x * mul;
             getPlayer().motionZ = motion.y * mul;
+
+            if (getPlayer().onGround && (motion.x != 0 || motion.y != 0)) {
+                getPlayer().jump();
+            }
         }
     }
 

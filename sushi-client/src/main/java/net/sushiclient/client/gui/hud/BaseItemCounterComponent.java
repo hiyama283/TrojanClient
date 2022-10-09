@@ -34,7 +34,7 @@ public abstract class BaseItemCounterComponent extends BaseHudElementComponent i
             setWidth(preview.getWidth() + 3);
             setHeight(preview.getHeight() + 4);
         } else {
-            renderItem(targetItem());
+            renderItem(targetItem(), true);
         }
     }
 
