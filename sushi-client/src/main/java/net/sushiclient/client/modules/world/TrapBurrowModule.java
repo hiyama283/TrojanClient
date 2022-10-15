@@ -56,6 +56,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
     private final Configuration<Boolean> faceObsidian;
     private int tryCount;
     private int step;
+
     public TrapBurrowModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         offset = provider.get("offset", "Offset", null, DoubleRange.class, new DoubleRange(0.2, 0.6, 0.1, 0.1, 1));
@@ -125,7 +126,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         }
 
         if (!placeAssistBlock.getValue() || onlyInHole.getValue() || PositionUtils.isPlayerInHole() ||
-            !BlockUtils.isAir(getWorld(), getPlayer().getPosition().add(EnumFacing.NORTH.getDirectionVec()))) {
+                !BlockUtils.isAir(getWorld(), getPlayer().getPosition().add(EnumFacing.NORTH.getDirectionVec()))) {
 
             BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(),
                     packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue(), faceObsidian.getValue());
@@ -169,6 +170,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
 
     private boolean toggledOn;
     private boolean sneaked;
+
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
         if (tryCount >= tryPlaceCount.getValue().getCurrent()) {

@@ -33,6 +33,7 @@ public class AnnouncerModule extends BaseModule {
     private final Configuration<DoubleRange> range;
     private final Configuration<Boolean> autoEz;
     private final Configuration<Boolean> pop;
+
     public AnnouncerModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         range = provider.get("range", "Range", null, DoubleRange.class, new DoubleRange(3, 5, 0.1, 0.1, 1));
@@ -66,7 +67,7 @@ public class AnnouncerModule extends BaseModule {
 
         if (e.getEntityIn().getDistance(getPlayer()) > range.getValue().getCurrent()) return;
 
-        if (e.getEntityIn() instanceof  EntityPlayerSP && e.getEntityIn().isDead) {
+        if (e.getEntityIn() instanceof EntityPlayerSP && e.getEntityIn().isDead) {
             chatLog(e.getEntityIn().getName() + " Has dead.");
         }
     }

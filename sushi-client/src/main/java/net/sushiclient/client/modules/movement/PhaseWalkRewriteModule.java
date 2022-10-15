@@ -56,6 +56,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     private final PhaseWalkTimer timer = new PhaseWalkTimer();
     private boolean firstStart = true;
     private long startTime = 0;
+
     public PhaseWalkRewriteModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         tpsSync = provider.get("tps_sync", "Tps sync", null, Boolean.class, false);
@@ -70,6 +71,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     }
 
     private boolean paused = false;
+
     private void speedModulePauseManager(boolean b) {
         if (paused && b)
             return;
@@ -145,7 +147,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
                 } else
                     PositionUtils.move(player.posX, underY, player.posZ, 0, 0, false, PositionMask.POSITION);
                 sneakedFlag = true;
-            } else if(sneakedFlag) {
+            } else if (sneakedFlag) {
                 sneakedFlag = false;
             }
             if (getPlayer().movementInput.jump) {
@@ -156,7 +158,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
                 } else
                     PositionUtils.move(player.posX, upY, player.posZ, 0, 0, false, PositionMask.POSITION);
                 jumpedFlag = true;
-            } else if(jumpedFlag) {
+            } else if (jumpedFlag) {
                 jumpedFlag = false;
             }
 

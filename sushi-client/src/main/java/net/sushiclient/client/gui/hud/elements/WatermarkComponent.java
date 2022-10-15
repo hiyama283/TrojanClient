@@ -22,7 +22,6 @@ package net.sushiclient.client.gui.hud.elements;
 import net.sushiclient.client.ModInformation;
 import net.sushiclient.client.config.Configurations;
 import net.sushiclient.client.gui.hud.TextElementComponent;
-import net.sushiclient.client.utils.HWID;
 
 public class WatermarkComponent extends TextElementComponent {
     public WatermarkComponent(Configurations configurations, String id, String name) {

@@ -32,6 +32,7 @@ public class MotionMultiplierModule extends BaseModule {
     private final Configuration<Boolean> X;
     private final Configuration<Boolean> Y;
     private final Configuration<Boolean> Z;
+
     public MotionMultiplierModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         multiplier = provider.get("multiplier", "Multiplier", null, DoubleRange.class,

@@ -39,6 +39,7 @@ public interface Module {
     boolean isEnabled();
 
     void setEnabled(boolean enabled);
+
     void setEnabled(boolean enabled, String message);
 
     boolean isPaused();

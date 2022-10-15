@@ -23,7 +23,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.data.Named;
 
 import java.awt.*;
@@ -362,6 +361,7 @@ public class RenderBuilder {
         ;
 
         private final String name;
+
         Box(String name) {
             this.name = name;
         }

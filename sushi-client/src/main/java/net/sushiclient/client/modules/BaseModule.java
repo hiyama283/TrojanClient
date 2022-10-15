@@ -35,8 +35,6 @@ import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.gui.hud.ElementConstructor;
 import net.sushiclient.client.gui.hud.ElementFactory;
 import net.sushiclient.client.modules.client.DebugModule;
-import net.sushiclient.client.utils.elements.sound.BreakSound;
-import net.sushiclient.client.utils.elements.sound.ClickSound;
 
 import java.util.ArrayList;
 

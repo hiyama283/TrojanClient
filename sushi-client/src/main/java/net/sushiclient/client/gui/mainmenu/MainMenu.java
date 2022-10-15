@@ -1,14 +1,21 @@
 package net.sushiclient.client.gui.mainmenu;
 
 import com.google.gson.Gson;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.ISound;
+import net.minecraft.client.audio.Sound;
+import net.minecraft.client.audio.SoundEventAccessor;
+import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
 import net.sushiclient.client.ModInformation;
 import net.sushiclient.client.Sushi;
+import net.sushiclient.client.gui.bgm.ChillThemeBGM;
 import net.sushiclient.client.gui.mainmenu.particle.ParticleManager;
 import org.lwjgl.opengl.GL11;
 
@@ -27,6 +34,22 @@ import static net.sushiclient.client.gui.font.FontManager.jelloFont;
 import static net.sushiclient.client.gui.font.FontManager.jelloLargeFont;
 
 public class MainMenu extends GuiScreen {
+    private static Minecraft mc = Minecraft.getMinecraft();
+    private static boolean soundPlayed = false;
+    public static void playMusic(ISound sound) {
+        if (!soundPlayed && !mc.getSoundHandler().isSoundPlaying(sound)) {
+            mc.getSoundHandler().playSound(sound);
+            soundPlayed = true;
+        }
+    }
+
+    public static void stopMusic(ISound sound) {
+        if (soundPlayed && mc.getSoundHandler().isSoundPlaying(sound)) {
+            mc.getSoundHandler().stopSound(sound);
+            soundPlayed = false;
+        }
+    }
+
     public static int background = 0;
     public static int backgroundSize = 6;
 
@@ -55,6 +78,7 @@ public class MainMenu extends GuiScreen {
     static class ChangeLog {
         public String tag_name;
         public String body;
+
         public ChangeLog(String tag_name, String body) {
             this.tag_name = tag_name;
             this.body = body;
@@ -75,11 +99,13 @@ public class MainMenu extends GuiScreen {
         background4 = new ResourceLocation("sushi/background/mainmenu4.png");
         background5 = new ResourceLocation("sushi/background/mainmenu5.png");
         background6 = new ResourceLocation("sushi/background/mainmenu6.png");
-
+        Minecraft.getMinecraft().gameSettings.setSoundLevel(SoundCategory.MUSIC, 0);
     }
 
     @Override
     public void initGui() {
+        MainMenu.playMusic(ChillThemeBGM.sound);
+
         buttons = new LinkedList<>();
         pm = new ParticleManager();
         buttons.add(new CustomButton("SinglePlayer", new ResourceLocation("sushi/icon/singleplayer.png"), new GuiWorldSelection(this)));
@@ -93,7 +119,7 @@ public class MainMenu extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        ResourceLocation[] background = new ResourceLocation[] {background1, background2, background3, background4, background5, background6};
+        ResourceLocation[] background = new ResourceLocation[]{background1, background2, background3, background4, background5, background6};
         GlStateManager.pushMatrix();
         GlStateManager.enableAlpha();
         GlStateManager.enableTexture2D();
@@ -106,17 +132,17 @@ public class MainMenu extends GuiScreen {
             targetBackground = background1;
         }
         mc.getTextureManager().bindTexture(targetBackground);
-        drawModalRectWithCustomSizedTexture(-this.animatedX/4, -this.animatedY/3, 0, 0, sr.getScaledWidth()/3*4, sr.getScaledHeight()/3*4, sr.getScaledWidth()/3*4, sr.getScaledHeight()/3*4);
+        drawModalRectWithCustomSizedTexture(-this.animatedX / 4, -this.animatedY / 3, 0, 0, sr.getScaledWidth() / 3 * 4, sr.getScaledHeight() / 3 * 4, sr.getScaledWidth() / 3 * 4, sr.getScaledHeight() / 3 * 4);
         // mc.getTextureManager().bindTexture(new ResourceLocation("sushi/logo.png"));
         // Gui.drawModalRectWithCustomSizedTexture(0, 0, 0F, 0F, 125, 49, 125, 49);
-        int xOffset = sr.getScaledWidth()/2-180;
-        for(CustomButton cb : buttons) {
-            cb.drawScreen(xOffset, sr.getScaledHeight()/2-20, mouseX, mouseY);
+        int xOffset = sr.getScaledWidth() / 2 - 180;
+        for (CustomButton cb : buttons) {
+            cb.drawScreen(xOffset, sr.getScaledHeight() / 2 - 20, mouseX, mouseY);
             xOffset += 80;
         }
         drawCircle(0, 0, 5, -1);
         jelloLargeFont.drawString("Changelog", 4, 4, 0xc0ffffff);
-        jelloLargeFont.drawString(" -" + ModInformation.version, 4, 15, 0xc0ffffff);
+        jelloLargeFont.drawString(" - " + ModInformation.version, 4, 15, 0xc0ffffff);
 
         int y = 26;
         for (String s : MainMenu.changeLog.body.split("\n")) {
@@ -126,26 +152,26 @@ public class MainMenu extends GuiScreen {
 
         jelloLargeFont.drawString(ModInformation.name + " - " + ModInformation.version,
                 ((sr.getScaledWidth() / 2) - 20), ((sr.getScaledHeight() / 2) - 50), 0xd0ffffff);
-        jelloLargeFont.drawString("By Team shark", sr.getScaledWidth()- jelloLargeFont.getStringWidth("By Team shark")-4,
-                sr.getScaledHeight()-12, 0xd0ffffff);
+        jelloLargeFont.drawString("By Team shark", sr.getScaledWidth() - jelloLargeFont.getStringWidth("By Team shark") - 4,
+                sr.getScaledHeight() - 12, 0xd0ffffff);
         super.drawScreen(mouseX, mouseY, partialTicks);
         pm.render(mouseX, mouseY, sr);
-        animatedX += ((mouseX-animatedX) / 1.8) + 0.1;
-        animatedY += ((mouseY-animatedY) / 1.8) + 0.1;
+        animatedX += ((mouseX - animatedX) / 1.8) + 0.1;
+        animatedY += ((mouseY - animatedY) / 1.8) + 0.1;
         GlStateManager.disableTexture2D();
         GlStateManager.disableAlpha();
         GlStateManager.popMatrix();
     }
 
     @Override
-    public void mouseClicked(int mouseX , int mouseY , int mouseButton) {
-        for(CustomButton cb : buttons) {
-            cb.onClicked(mouseX , mouseY , mouseButton);
-        } 
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+        for (CustomButton cb : buttons) {
+            cb.onClicked(mouseX, mouseY, mouseButton);
+        }
     }
 
     @Override
-    public void keyTyped(char typedChar , int keyCode) {
+    public void keyTyped(char typedChar, int keyCode) {
     }
 
     private class CustomButton {
@@ -164,27 +190,26 @@ public class MainMenu extends GuiScreen {
         }
 
         public void drawScreen(int posX, int posY, int mouseX, int mouseY) {
-            if(isMouseHovering(posX, posY, 48, 48, mouseX, mouseY)) {
+            if (isMouseHovering(posX, posY, 48, 48, mouseX, mouseY)) {
                 animatedSize = animate(animatedSize, 30);
-                jelloFont.drawCenteredString(name, posX+25, posY+60, -1);
-            }
-            else animatedSize = animate(animatedSize, 25);
-            GL11.glColor4f(1,1, 1,0.75f);
+                jelloFont.drawCenteredString(name, posX + 25, posY + 60, -1);
+            } else animatedSize = animate(animatedSize, 25);
+            GL11.glColor4f(1, 1, 1, 0.75f);
             mc.getTextureManager().bindTexture(resource);
-            Gui.drawModalRectWithCustomSizedTexture(posX-(int)animatedSize/2+25, posY-(int)animatedSize/2+25, 0, 0, (int)(animatedSize*1.5f), (int) (animatedSize*1.5f), animatedSize*1.5f, animatedSize*1.5f);
+            Gui.drawModalRectWithCustomSizedTexture(posX - (int) animatedSize / 2 + 25, posY - (int) animatedSize / 2 + 25, 0, 0, (int) (animatedSize * 1.5f), (int) (animatedSize * 1.5f), animatedSize * 1.5f, animatedSize * 1.5f);
             this.posX = posX;
             this.posY = posY;
         }
 
         public void onClicked(int mouseX, int mouseY, int mouseButton) {
-            if(isMouseHovering(posX, posY, 48, 48, mouseX, mouseY)) {
-                if (parent == null)mc.shutdown();
+            if (isMouseHovering(posX, posY, 48, 48, mouseX, mouseY)) {
+                if (parent == null) mc.shutdown();
                 mc.displayGuiScreen(parent);
             }
         }
     }
 
-    private boolean isMouseHovering(float x, float y, float width, float height, int mouseX, int mouseY){
+    private boolean isMouseHovering(float x, float y, float width, float height, int mouseX, int mouseY) {
         return mouseX >= x && mouseY >= y && mouseX <= x + width && mouseY <= y + height;
     }
 

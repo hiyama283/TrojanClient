@@ -30,6 +30,7 @@ public enum TestSelectList implements Named {
     @SerializedName("Z")
     Z("Z");
     private final String name;
+
     TestSelectList(String name) {
         this.name = name;
     }

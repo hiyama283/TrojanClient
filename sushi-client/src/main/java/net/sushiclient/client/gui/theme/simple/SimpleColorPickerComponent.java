@@ -303,7 +303,8 @@ public class SimpleColorPickerComponent extends BaseComponent {
         }
     }
 
-    protected void onChange(Color color) {}
+    protected void onChange(Color color) {
+    }
 
     public void setColor(Color color) {
         this.color = color;

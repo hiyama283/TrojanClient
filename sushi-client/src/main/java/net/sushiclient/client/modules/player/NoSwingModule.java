@@ -31,6 +31,7 @@ import net.sushiclient.client.utils.player.SwingHand;
 
 public class NoSwingModule extends BaseModule {
     private final Configuration<SwingHand> swing;
+
     public NoSwingModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         swing = provider.get("swing", "Swing arm", null, SwingHand.class, SwingHand.None);

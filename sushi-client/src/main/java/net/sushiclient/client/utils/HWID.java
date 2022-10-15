@@ -24,14 +24,12 @@ import java.security.MessageDigest;
 public class HWID {
 
     /**
-     *
      * @return HWID in SHA-224;
-     *
      */
 
     public static String getHWID() {
-        try{
-            String toEncrypt =  System.getenv("COMPUTERNAME") +
+        try {
+            String toEncrypt = System.getenv("COMPUTERNAME") +
                     System.getProperty("user.name") +
                     System.getenv("PROCESSOR_IDENTIFIER") +
                     System.getenv("PROCESSOR_LEVEL") +

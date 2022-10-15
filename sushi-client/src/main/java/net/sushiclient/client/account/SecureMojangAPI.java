@@ -162,7 +162,8 @@ public class SecureMojangAPI implements MojangAPI {
         try (CloseableHttpResponse res =
                      execute(RequestBuilder.get().setUri("https://api.mojang.com/user/profiles/" + acc.getId() + "/names"))) {
             checkStatus(res, 200);
-            Type type = new TypeToken<Collection<NameHistory>>() {}.getType();
+            Type type = new TypeToken<Collection<NameHistory>>() {
+            }.getType();
             return gson.fromJson(IOUtils.toString(res.getEntity().getContent(), StandardCharsets.UTF_8), type);
         }
     }

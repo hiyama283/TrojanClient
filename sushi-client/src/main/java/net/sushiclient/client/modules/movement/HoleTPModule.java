@@ -37,6 +37,7 @@ import java.util.List;
 
 public class HoleTPModule extends BaseModule {
     private final Configuration<DoubleRange> range;
+
     public HoleTPModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         range = provider.get("range", "range", "Can teleport range", DoubleRange.class, new DoubleRange(2.5, 5, 0.1, 0.1, 1));
@@ -83,7 +84,7 @@ public class HoleTPModule extends BaseModule {
             if (mostNearDistance <= range.getValue().getCurrent()) {
                 PositionUtils.move(mostNearPos.getX(), mostNearPos.getY(), mostNearPos.getZ(), 0, 0, mc.player.onGround, PositionMask.POSITION);
                 chatLog("Success fully teleported.");
-                chatLog("debug distance:" + mostNear.distance() + " X:" + mostNearPos.getX() + " Y:" + mostNearPos.getY() + " Z:" + mostNearPos.getZ()  );
+                chatLog("debug distance:" + mostNear.distance() + " X:" + mostNearPos.getX() + " Y:" + mostNearPos.getY() + " Z:" + mostNearPos.getZ());
             } else
                 chatLog("Hole not found.");
         } catch (IndexOutOfBoundsException ignored) {

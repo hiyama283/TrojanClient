@@ -23,7 +23,6 @@ import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-import net.sushiclient.client.Sushi;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.ConfigurationCategory;
 import net.sushiclient.client.config.RootConfigurations;

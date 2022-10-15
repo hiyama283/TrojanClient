@@ -33,6 +33,7 @@ import java.util.ArrayList;
 
 public class ArmorWarningComponent extends TextElementComponent {
     private final Configuration<DoubleRange> warnPercent;
+
     public ArmorWarningComponent(Configurations configurations, String id, String name) {
         super(configurations, id, name);
         warnPercent = getConfiguration("warn_percent", "Warn percent", null, DoubleRange.class,

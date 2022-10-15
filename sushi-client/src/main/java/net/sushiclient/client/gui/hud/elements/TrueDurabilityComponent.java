@@ -34,8 +34,10 @@ public class TrueDurabilityComponent extends TextElementComponent {
         ItemStack item = ItemSlot.current().getItemStack();
 
         if ((item.getMaxDamage() - item.getItemDamage()) == -1) return item.getDisplayName() + "[Infinite]";
-        else if ((item.getMaxDamage() + 1 - item.getItemDamage()) == 1 && item.getMaxDamage() == 1) return item.getDisplayName() + "[Infinite]";
-        else return item.getDisplayName() + "[" + (item.getMaxDamage() + 1 - item.getItemDamage()) + "/" + (item.getMaxDamage() + 1) + "]";
+        else if ((item.getMaxDamage() + 1 - item.getItemDamage()) == 1 && item.getMaxDamage() == 1)
+            return item.getDisplayName() + "[Infinite]";
+        else
+            return item.getDisplayName() + "[" + (item.getMaxDamage() + 1 - item.getItemDamage()) + "/" + (item.getMaxDamage() + 1) + "]";
     }
 
     @Override

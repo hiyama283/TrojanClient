@@ -27,8 +27,6 @@ import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.Configurations;
 import net.sushiclient.client.config.data.IntRange;
 import net.sushiclient.client.gui.hud.MultiLineTextElementComponent;
-import net.sushiclient.client.modules.Categories;
-import scala.collection.parallel.ParIterableLike;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +36,7 @@ public class TextRaderComponent extends MultiLineTextElementComponent {
     private final Configuration<IntRange> healthYellow;
     private final Configuration<IntRange> rangeGreen;
     private final Configuration<IntRange> rangeYellow;
+
     public TextRaderComponent(Configurations configurations, String id, String name) {
         super(configurations, id, name);
         healthGreen = getConfiguration("health_green", "Health green", null, IntRange.class, new IntRange(12, 20, 0, 1));
@@ -73,7 +72,8 @@ public class TextRaderComponent extends MultiLineTextElementComponent {
             double fullHealth = format(playerEntity.getHealth() + playerEntity.getAbsorptionAmount());
             String playerNameFormat;
             if (fullHealth > healthGreen.getValue().getCurrent()) playerNameFormat = TextFormatting.GREEN.toString();
-            else if (fullHealth > healthYellow.getValue().getCurrent()) playerNameFormat = TextFormatting.YELLOW.toString();
+            else if (fullHealth > healthYellow.getValue().getCurrent())
+                playerNameFormat = TextFormatting.YELLOW.toString();
             else playerNameFormat = TextFormatting.RED.toString();
 
             result.add("[" + rangeText + "] " + playerNameFormat + playerEntity.getName() + TextFormatting.WHITE +

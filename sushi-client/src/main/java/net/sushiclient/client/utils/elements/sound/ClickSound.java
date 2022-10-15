@@ -86,7 +86,7 @@ public class ClickSound implements IMC {
 
             @Override
             public float getYPosF() {
-                return mc.player != null ? (float) mc.player.posY: 0;
+                return mc.player != null ? (float) mc.player.posY : 0;
             }
 
             @Override

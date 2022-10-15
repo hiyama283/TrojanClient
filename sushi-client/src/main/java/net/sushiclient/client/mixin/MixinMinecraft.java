@@ -31,6 +31,7 @@ import net.sushiclient.client.events.client.WorldLoadEvent;
 import net.sushiclient.client.events.render.GuiScreenCloseEvent;
 import net.sushiclient.client.events.render.GuiScreenDisplayEvent;
 import net.sushiclient.client.events.tick.GameTickEvent;
+import net.sushiclient.client.gui.bgm.ChillThemeBGM;
 import net.sushiclient.client.gui.mainmenu.MainMenu;
 import net.sushiclient.client.utils.player.SessionUtils;
 import org.spongepowered.asm.mixin.Mixin;
@@ -111,15 +112,16 @@ public class MixinMinecraft {
         }
     }
 
-
     @Inject(at = @At("TAIL"), method = "displayGuiScreen", cancellable = true)
     public void displayGuiScreen(GuiScreen guiScreenIn, CallbackInfo ci) {
         GuiScreenDisplayEvent event = new GuiScreenDisplayEvent(guiScreenIn, EventTiming.POST);
         EventHandlers.callEvent(event);
 
-        if((guiScreenIn == null && Minecraft.getMinecraft().world == null) || guiScreenIn instanceof GuiMainMenu) {
+        if ((guiScreenIn == null && Minecraft.getMinecraft().world == null) || guiScreenIn instanceof GuiMainMenu) {
             Minecraft.getMinecraft().displayGuiScreen(new MainMenu());
             ci.cancel();
+        } else if (Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(ChillThemeBGM.sound)) {
+            MainMenu.stopMusic(ChillThemeBGM.sound);
         }
     }
 }

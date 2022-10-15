@@ -32,6 +32,7 @@ import net.sushiclient.client.modules.*;
 public class NoFallsModule extends BaseModule {
     private final Configuration<DoubleRange> lagBackToggleMotion;
     private final Configuration<IntRange> lagBackMotionValue;
+
     public NoFallsModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         lagBackToggleMotion = provider.get("lag_back_toggle_motion", "Lagback toggle motion", null, DoubleRange.class,
