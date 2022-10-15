@@ -27,7 +27,6 @@ import net.sushiclient.client.modules.*;
 
 public class SplashScreenModule extends BaseModule {
     private final Configuration<IntRange> backgroundId;
-    private final Configuration<Boolean> disable;
     public SplashScreenModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         backgroundId = provider.get("back_ground_id", "Background id", null, IntRange.class,
@@ -35,12 +34,6 @@ public class SplashScreenModule extends BaseModule {
         MainMenu.background = backgroundId.getValue().getCurrent();
         backgroundId.addHandler(b -> {
             MainMenu.background = b.getCurrent();
-        });
-
-        disable = provider.get("disable", "Disable", null, Boolean.class, false);
-        MainMenu.disable = disable.getValue();
-        disable.addHandler(b -> {
-            MainMenu.disable = b;
         });
     }
 

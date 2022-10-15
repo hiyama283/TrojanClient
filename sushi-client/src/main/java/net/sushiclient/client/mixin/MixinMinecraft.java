@@ -117,7 +117,7 @@ public class MixinMinecraft {
         GuiScreenDisplayEvent event = new GuiScreenDisplayEvent(guiScreenIn, EventTiming.POST);
         EventHandlers.callEvent(event);
 
-        if(!MainMenu.disable && (guiScreenIn == null && Minecraft.getMinecraft().world == null) || guiScreenIn instanceof GuiMainMenu) {
+        if((guiScreenIn == null && Minecraft.getMinecraft().world == null) || guiScreenIn instanceof GuiMainMenu) {
             Minecraft.getMinecraft().displayGuiScreen(new MainMenu());
             ci.cancel();
         }

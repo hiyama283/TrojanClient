@@ -1,29 +1,72 @@
 package net.sushiclient.client.gui.mainmenu;
 
+import com.google.gson.Gson;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
+import net.sushiclient.client.ModInformation;
+import net.sushiclient.client.Sushi;
 import net.sushiclient.client.gui.mainmenu.particle.ParticleManager;
 import org.lwjgl.opengl.GL11;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static net.sushiclient.client.gui.font.FontManager.jelloFont;
 import static net.sushiclient.client.gui.font.FontManager.jelloLargeFont;
 
 public class MainMenu extends GuiScreen {
     public static int background = 0;
-    public static int backgroundSize = 5;
-    public static boolean disable = false;
+    public static int backgroundSize = 6;
 
-    private ResourceLocation background1, background2, background3, background4, background5;
+    static ChangeLog changeLog = new MainMenu.ChangeLog("0", "Null");
+
+    static {
+        String url = "https://api.github.com/repos/hiyama283/TrojanClient/releases/tags/" + ModInformation.version;
+
+        InputStream in = null;
+        try {
+            in = new URL(url).openStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (!Objects.isNull(in)) {
+            InputStreamReader inputStreamReader = new InputStreamReader(in);
+            Stream<String> streamOfString = new BufferedReader(inputStreamReader).lines();
+            String s = streamOfString.collect(Collectors.joining("\n"));
+
+            Sushi.log4j.info(s);
+            changeLog = new Gson().fromJson(s, ChangeLog.class);
+        }
+    }
+
+    static class ChangeLog {
+        public String tag_name;
+        public String body;
+        public ChangeLog(String tag_name, String body) {
+            this.tag_name = tag_name;
+            this.body = body;
+        }
+    }
+
+    private final ResourceLocation background1, background2, background3, background4, background5, background6;
+
     private int animatedX, animatedY;
     private List<CustomButton> buttons;
     private ParticleManager pm;
+
 
     public MainMenu() {
         background1 = new ResourceLocation("sushi/background/mainmenu1.png");
@@ -31,6 +74,8 @@ public class MainMenu extends GuiScreen {
         background3 = new ResourceLocation("sushi/background/mainmenu3.png");
         background4 = new ResourceLocation("sushi/background/mainmenu4.png");
         background5 = new ResourceLocation("sushi/background/mainmenu5.png");
+        background6 = new ResourceLocation("sushi/background/mainmenu6.png");
+
     }
 
     @Override
@@ -48,15 +93,22 @@ public class MainMenu extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        ResourceLocation[] background = new ResourceLocation[] {background1, background2, background3, background4, background5};
+        ResourceLocation[] background = new ResourceLocation[] {background1, background2, background3, background4, background5, background6};
         GlStateManager.pushMatrix();
         GlStateManager.enableAlpha();
         GlStateManager.enableTexture2D();
         ScaledResolution sr = new ScaledResolution(mc);
-        mc.getTextureManager().bindTexture(background[MainMenu.background]);
+
+        ResourceLocation targetBackground;
+        try {
+            targetBackground = background[MainMenu.background];
+        } catch (IndexOutOfBoundsException e) {
+            targetBackground = background1;
+        }
+        mc.getTextureManager().bindTexture(targetBackground);
         drawModalRectWithCustomSizedTexture(-this.animatedX/4, -this.animatedY/3, 0, 0, sr.getScaledWidth()/3*4, sr.getScaledHeight()/3*4, sr.getScaledWidth()/3*4, sr.getScaledHeight()/3*4);
-        //mc.getTextureManager().bindTexture(new ResourceLocation("orangette/logo.png"));
-        //Gui.drawModalRectWithCustomSizedTexture(0, 0, 0F, 0F, 125, 49, 125, 49);
+        // mc.getTextureManager().bindTexture(new ResourceLocation("sushi/logo.png"));
+        // Gui.drawModalRectWithCustomSizedTexture(0, 0, 0F, 0F, 125, 49, 125, 49);
         int xOffset = sr.getScaledWidth()/2-180;
         for(CustomButton cb : buttons) {
             cb.drawScreen(xOffset, sr.getScaledHeight()/2-20, mouseX, mouseY);
@@ -64,7 +116,18 @@ public class MainMenu extends GuiScreen {
         }
         drawCircle(0, 0, 5, -1);
         jelloLargeFont.drawString("Changelog", 4, 4, 0xc0ffffff);
-        jelloLargeFont.drawString("By Team shark", sr.getScaledWidth()- jelloLargeFont.getStringWidth("By Team shark")-4, sr.getScaledHeight()-12, 0xd0ffffff);
+        jelloLargeFont.drawString(" -" + ModInformation.version, 4, 15, 0xc0ffffff);
+
+        int y = 26;
+        for (String s : MainMenu.changeLog.body.split("\n")) {
+            jelloLargeFont.drawString(s, 4, y, 0xc0ffffff);
+            y += 11;
+        }
+
+        jelloLargeFont.drawString(ModInformation.name + " - " + ModInformation.version,
+                ((sr.getScaledWidth() / 2) - 20), ((sr.getScaledHeight() / 2) - 50), 0xd0ffffff);
+        jelloLargeFont.drawString("By Team shark", sr.getScaledWidth()- jelloLargeFont.getStringWidth("By Team shark")-4,
+                sr.getScaledHeight()-12, 0xd0ffffff);
         super.drawScreen(mouseX, mouseY, partialTicks);
         pm.render(mouseX, mouseY, sr);
         animatedX += ((mouseX-animatedX) / 1.8) + 0.1;
