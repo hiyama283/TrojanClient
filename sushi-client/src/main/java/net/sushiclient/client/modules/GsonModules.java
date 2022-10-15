@@ -1,3 +1,22 @@
+/*
+ * Contact github.com/hiyama283
+ * Project "sushi-client"
+ *
+ * Copyright 2022 hiyama283
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.sushiclient.client.modules;
 
 import com.google.gson.Gson;
@@ -62,6 +81,7 @@ public class GsonModules implements Modules {
         addModuleFactory("piston_aura", PistonAuraModule::new, true);
         addModuleFactory("surround", SurroundModule::new, true);
         addModuleFactory("velocity", VelocityModule::new, true);
+        addModuleFactory("self_fill", SelfFillModule::new, true);
 
         // Movement
         addModuleFactory("anchor", AnchorModule::new, true);
@@ -79,6 +99,7 @@ public class GsonModules implements Modules {
         addModuleFactory("phase_walk_rewrite", PhaseWalkRewriteModule::new, true);
         addModuleFactory("fast_stop", FastStopModule::new, true);
         addModuleFactory("motion_multiplier", MotionMultiplierModule::new, true);
+        addModuleFactory("no_falls", NoFallsModule::new, true);
 
         // Render
         addModuleFactory("block_highlight", BlockHighlightModule::new, true);
@@ -137,6 +158,8 @@ public class GsonModules implements Modules {
         addModuleFactory("chat_suffix", ChatSuffixModule::new, true);
         addModuleFactory("test", TestModule::new, true);
         addModuleFactory("debug", DebugModule::new, true);
+        addModuleFactory("discord_rpc", DiscordPRCModule::new, true);
+        addModuleFactory("splash_screen", SplashScreenModule::new, true);
     }
 
     private void addModuleFactory(String id, ModuleConstructor constructor, boolean isDefault) {

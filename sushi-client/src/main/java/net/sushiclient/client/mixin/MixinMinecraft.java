@@ -1,6 +1,26 @@
+/*
+ * Contact github.com/hiyama283
+ * Project "sushi-client"
+ *
+ * Copyright 2022 hiyama283
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.sushiclient.client.mixin;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.Session;
@@ -11,6 +31,7 @@ import net.sushiclient.client.events.client.WorldLoadEvent;
 import net.sushiclient.client.events.render.GuiScreenCloseEvent;
 import net.sushiclient.client.events.render.GuiScreenDisplayEvent;
 import net.sushiclient.client.events.tick.GameTickEvent;
+import net.sushiclient.client.gui.mainmenu.MainMenu;
 import net.sushiclient.client.utils.player.SessionUtils;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -91,9 +112,14 @@ public class MixinMinecraft {
     }
 
 
-    @Inject(at = @At("TAIL"), method = "displayGuiScreen")
+    @Inject(at = @At("TAIL"), method = "displayGuiScreen", cancellable = true)
     public void displayGuiScreen(GuiScreen guiScreenIn, CallbackInfo ci) {
         GuiScreenDisplayEvent event = new GuiScreenDisplayEvent(guiScreenIn, EventTiming.POST);
         EventHandlers.callEvent(event);
+
+        if(!MainMenu.disable && (guiScreenIn == null && Minecraft.getMinecraft().world == null) || guiScreenIn instanceof GuiMainMenu) {
+            Minecraft.getMinecraft().displayGuiScreen(new MainMenu());
+            ci.cancel();
+        }
     }
 }

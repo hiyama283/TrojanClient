@@ -1,8 +1,28 @@
+/*
+ * Contact github.com/hiyama283
+ * Project "sushi-client"
+ *
+ * Copyright 2022 hiyama283
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.sushiclient.client.modules.world;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.audio.ElytraSound;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
@@ -16,8 +36,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.config.Configuration;
+import net.sushiclient.client.config.ConfigurationCategory;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
+import net.sushiclient.client.config.data.EspColor;
 import net.sushiclient.client.config.data.IntRange;
 import net.sushiclient.client.config.data.Named;
 import net.sushiclient.client.events.EventHandler;
@@ -27,11 +49,8 @@ import net.sushiclient.client.events.packet.PacketSendEvent;
 import net.sushiclient.client.events.tick.ClientTickEvent;
 import net.sushiclient.client.events.world.WorldRenderEvent;
 import net.sushiclient.client.mixin.AccessorPlayerControllerMP;
-import net.sushiclient.client.mixin.accessor.IPlayerControllerMP;
 import net.sushiclient.client.modules.*;
-import net.sushiclient.client.utils.player.InventoryUtils;
-import net.sushiclient.client.utils.player.ItemSlot;
-import net.sushiclient.client.utils.player.PlayerUtils;
+import net.sushiclient.client.utils.player.*;
 import net.sushiclient.client.utils.render.RenderBuilder;
 import net.sushiclient.client.utils.render.RenderUtils;
 import net.sushiclient.client.utils.world.BlockUtils;
@@ -64,33 +83,82 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
     private final Configuration<Boolean> render;
     private final Configuration<RenderBuilder.Box> renderMode;
     private final Configuration<DoubleRange> outlineWidth;
-    private final Configuration<Color> unbreakColor;
-    private final Configuration<Color> breakedColor;
+    private final Configuration<EspColor> unbreakColor;
+    private final Configuration<EspColor> breakColor;
+    private final Configuration<Boolean> useAirColor;
+    private final Configuration<EspColor> airColor;
+    private final Configuration<Boolean> strictBreak;
+    private final Configuration<Boolean> rotation;
+    private final Configuration<Boolean> alwaysRotate;
+    private final Configuration<Boolean> rotateOnCanBreak;
+    private final Configuration<Boolean> rotateOnBlockIsAvaiable;
+    private final Configuration<Boolean> shaderMode;
+    private final Configuration<Boolean> renderText;
+    private final Configuration<String> textFont;
+    private final Configuration<EspColor> textColor;
+    private final Configuration<IntRange> textPts;
+    private final Configuration<Boolean> textShadow;
 
     public SpeedMineModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
-        range = provider.get("range", "Range", null, IntRange.class, new IntRange(5, 10, 1, 1));
-        packetMine = provider.get("packet_mine", "Packet Mine", null, Boolean.class, true);
-        switching = provider.get("switching", "Switch", null, MiningMode.class, MiningMode.NONE);
-        antiAbort = provider.get("anti_abort", "Anti Abort", null, Boolean.class, true);
-        once = provider.get("once", "Once break", null, Boolean.class, false);
-        resetDamage = provider.get("reset_damage", "Reset damage", null, Boolean.class, false);
-        render = provider.get("render", "Render", null, Boolean.class, true);
-        renderMode = provider.get("render_mode", "Render mode",  null, RenderBuilder.Box.class, RenderBuilder.Box.BOTH,
-                render::getValue, false, 0);
-        outlineWidth = provider.get("outline_width", "Outline width", null, DoubleRange.class,
+
+        ConfigurationCategory breakSettings = provider.getCategory("break", "Break Settings", null);
+        this.range = breakSettings.get("range", "Range", null, IntRange.class, new IntRange(5, 10, 1, 1));
+        packetMine = breakSettings.get("packet_mine", "Packet Mine", null, Boolean.class, true);
+        antiAbort = breakSettings.get("anti_abort", "Anti Abort", null, Boolean.class, true);
+        switching = breakSettings.get("switching", "Switch", null, MiningMode.class, MiningMode.NONE);
+
+        ConfigurationCategory rotate = provider.getCategory("rotate", "Rotate Settings", null);
+        rotation = rotate.get("rotate", "Rotate", null, Boolean.class, false);
+        alwaysRotate = rotate.get("always_rotate", "Always rotate", null, Boolean.class, false,
+                rotation::getValue, false ,0);
+        rotateOnCanBreak = rotate.get("rotate_on_can_break", "Rotate on can break", null, Boolean.class, false,
+                rotation::getValue, false ,0);
+        rotateOnBlockIsAvaiable = rotate.get("rotate_on_block_is_avaiable", "Rotate on block is avaiable", null, Boolean.class,
+                false, rotation::getValue, false, 0);
+
+        ConfigurationCategory strict = provider.getCategory("strict", "Strict Settings", null);
+        once = strict.get("once", "Once break", null, Boolean.class, false);
+        resetDamage = strict.get("reset_damage", "Reset damage", null, Boolean.class, false);
+        strictBreak = strict.get("strict_break", "Strict break", null, Boolean.class, false);
+
+        ConfigurationCategory text = provider.getCategory("text_render", "Text render Settings", null);
+        renderText = text.get("render_text", "Render text", null, Boolean.class, false);
+        textFont = text.get("text_font", "Text font", null, String.class, "minecraft",
+                renderText::getValue, false, 0);
+        textColor = text.get("text_color", "Text color", null, EspColor.class, new EspColor(Color.WHITE, false, false),
+                renderText::getValue, false, 0);
+        textPts = text.get("text_pts", "Text pts", null, IntRange.class, new IntRange(9, 15, 1, 1),
+                renderText::getValue, false, 0);
+        textShadow = text.get("text_shadow", "Text shadow", null, Boolean.class, true);
+
+        ConfigurationCategory render = provider.getCategory("render", "Render Settings", null);
+        this.render = render.get("render", "Render", null, Boolean.class, true);
+        renderMode = render.get("render_mode", "Render mode",  null, RenderBuilder.Box.class, RenderBuilder.Box.BOTH,
+                this.render::getValue, false, 0);
+        outlineWidth = render.get("outline_width", "Outline width", null, DoubleRange.class,
                 new DoubleRange(1.5, 5, 0.1, 0.1, 1),
                 () -> renderMode.getValue() != RenderBuilder.Box.FILL, false, 0);
-        unbreakColor = provider.get("unbreak_color", "Unbreaked color", null, Color.class, new Color(255, 0, 0, 100),
-                render::getValue, false, 0);
-        breakedColor = provider.get("breaked_color", "Breaked color", null, Color.class, new Color(0, 255, 0, 100),
-                render::getValue, false, 0);
+        unbreakColor = render.get("unbreak_color", "Unbreaked color", null, EspColor.class,
+                new EspColor(new Color(255, 0, 0, 100), false, true),
+                this.render::getValue, false, 0);
+        breakColor = render.get("break_color", "Break color", null, EspColor.class,
+                new EspColor(new Color(0, 255, 0, 100), false ,true),
+                this.render::getValue, false, 0);
+        useAirColor = render.get("use_air_color", "Use air color", null, Boolean.class, true,
+                this.render::getValue, false, 0);
+        airColor = render.get("air_color", "Air color", null, EspColor.class,
+                new EspColor(new Color(138, 43, 226, 100), false, true),
+                () -> this.render.getValue() && useAirColor.getValue(), false, 0);
+        shaderMode = render.get("shader_mode", "Shader mode", null, Boolean.class, false,
+                this.render::getValue, false, 0);
     }
 
     @Override
     public void onEnable() {
         EventHandlers.register(this);
         mineDamage = 0;
+        suffixText = "";
     }
 
     @Override
@@ -103,14 +171,23 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
     private BlockPos minePosition;
 
     private final double END_DAMAGE = 1;
+    private int beforeSlot;
+
+    private void rotateToMinePos() {
+        float[] neededRotations = PositionUtils.getNeededRotations(getPlayer().getPositionVector());
+        PositionUtils.require()
+                .desyncMode(PositionMask.LOOK)
+                .rotation(neededRotations[0], neededRotations[1]);
+    }
 
     @EventHandler(timing = EventTiming.POST)
     public void onClientTick(ClientTickEvent e) {
         BlockPos breakingBlock = BlockUtils.getBreakingBlockPos();
         if (BlockUtils.getBlock(breakingBlock) == Blocks.BEDROCK) return;
 
-        if (PlayerUtils.getDistance(breakingBlock) >= 5) {
+        if (PlayerUtils.getDistance(breakingBlock) >= range.getValue().getCurrent()) {
             minePosition = null;
+            suffixText = "OUR";
             return;
         } else {
             if (breakingBlock != minePosition) {
@@ -119,6 +196,17 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
             }
             minePosition = breakingBlock;
         }
+
+        if (rotation.getValue() && alwaysRotate.getValue()) {
+            rotateToMinePos();
+        }
+
+        int nowSlotIndex = ItemSlot.current().getIndex();
+        if (strictBreak.getValue() && nowSlotIndex != beforeSlot) {
+            mineDamage = 0;
+            chatDebugLog("Reseted MineDamage. cause:Changed slot");
+        }
+        beforeSlot = nowSlotIndex;
 
         AccessorPlayerControllerMP controller = (AccessorPlayerControllerMP) getController();
 
@@ -129,16 +217,22 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
         }
 
         // packet mine
-        if (packetMine.getValue() && !BlockUtils.isAir(getWorld(), breakingBlock) && mineDamage >= END_DAMAGE) {
-            if (switching.getValue() == MiningMode.NONE) {
-                    sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, breakingBlock, EnumFacing.DOWN));
-            } else {
-                boolean b = switching.getValue() == MiningMode.PACKET;
+        if (!BlockUtils.isAir(getWorld(), breakingBlock)) {
+            if (rotation.getValue() && rotateOnBlockIsAvaiable.getValue())
+                rotateToMinePos();
 
-                ItemSlot slot = InventoryUtils.findBestTool(false, true, getWorld().getBlockState(breakingBlock));
-                InventoryUtils.silentSwitch(b, slot.getIndex(), () -> {
+            if (packetMine.getValue() && mineDamage >= END_DAMAGE) {
+                if (rotation.getValue() && rotateOnCanBreak.getValue())
+                    rotateToMinePos();
+
+                if (switching.getValue() == MiningMode.NONE) {
                     sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, breakingBlock, EnumFacing.DOWN));
-                });
+                } else {
+                    ItemSlot slot = InventoryUtils.findBestTool(false, true, getWorld().getBlockState(breakingBlock));
+                    InventoryUtils.silentSwitch(switching.getValue() == MiningMode.PACKET, slot.getIndex(), () -> {
+                        sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, breakingBlock, EnumFacing.DOWN));
+                    });
+                }
             }
         }
 
@@ -150,8 +244,10 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
         }
 
         float blockStrength = getBlockStrength(getWorld().getBlockState(breakingBlock), breakingBlock);
-        if (!String.valueOf(blockStrength).equals("Infinity"))
+        if (!Float.isInfinite(blockStrength))
             mineDamage += blockStrength;
+        if (blockStrength == 0)
+            suffixText = "0 strength";
 
         if (range.getValue().getCurrent() != 5 && ((AccessorPlayerControllerMP) getController()).getBlockHitDelay() == 5) {
             controller.setBlockHitDelay(range.getValue().getCurrent());
@@ -180,22 +276,27 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
 
     @EventHandler(timing = EventTiming.POST)
     public void onWorldRender(WorldRenderEvent e) {
-        if (packetMine.getValue() && !Objects.isNull(minePosition)) {
+        boolean posIsNull = Objects.isNull(minePosition);
+        if (posIsNull  && !suffixText.equals("OUR")) suffixText = "";
+        if (packetMine.getValue() && !posIsNull) {
             AxisAlignedBB box = getWorld().getBlockState(minePosition).getBoundingBox(getWorld(), minePosition);
             box = box.offset(minePosition).grow(0.002);
 
-            Color color;
+            EspColor color;
             float tmpDamage = mineDamage;
-            boolean targetIsAIr = BlockUtils.isAir(getWorld(), minePosition);
-            if (tmpDamage >= END_DAMAGE || targetIsAIr) {
-                color = breakedColor.getValue();
+            boolean targetIsAir = BlockUtils.isAir(getWorld(), minePosition);
+            if (tmpDamage >= END_DAMAGE || targetIsAir) {
+                color = breakColor.getValue();
                 suffixText = "Break";
 
-                if (targetIsAIr)
+                if (targetIsAir) {
                     tmpDamage = 1;
+                    color = airColor.getValue();
+                    suffixText = "Breaked";
+                }
             } else {
                 color = unbreakColor.getValue();
-                suffixText = String.valueOf(tmpDamage).substring(4);
+                suffixText = "" + String.valueOf(tmpDamage * 100).split("\\.")[0] + "%";
             }
 
             // box of the mine
@@ -204,25 +305,37 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
             // center of the box
             Vec3d mineCenter = mineBox.getCenter();
 
+            if (renderText.getValue()) {
+                RenderUtils.drawText(minePosition, suffixText, textFont.getValue(), textColor.getValue(),
+                        textPts.getValue().getCurrent(), textShadow.getValue());
+            }
+
             // shrink
             AxisAlignedBB shrunkMineBox = new AxisAlignedBB(mineCenter.x, mineCenter.y, mineCenter.z, mineCenter.x, mineCenter.y, mineCenter.z);
 
             // draw box
-            GlStateManager.disableDepth();
-            RenderUtils.drawBox(new RenderBuilder()
-                    .position(shrunkMineBox.grow(((mineBox.minX - mineBox.maxX) * 0.5) * MathHelper.clamp(tmpDamage, 0, 1), ((mineBox.minY - mineBox.maxY) * 0.5) * MathHelper.clamp(tmpDamage, 0, 1), ((mineBox.minZ - mineBox.maxZ) * 0.5) * MathHelper.clamp(tmpDamage, 0, 1)))
-                    .color(color)
-                    .box(renderMode.getValue())
-                    .setup()
-                    .line((float) outlineWidth.getValue().getCurrent())
-                    .cull(false)
-                    .shade(false)
-                    .alpha(false)
-                    .depth(true)
-                    .blend()
-                    .texture()
-            );
-            GlStateManager.enableDepth();
+            if (shaderMode.getValue()) {
+                GlStateManager.disableDepth();
+                RenderUtils.drawFilled(box, color.getCurrentColor());
+                RenderUtils.drawOutline(box, color.getCurrentColor(), outlineWidth.getValue().getCurrent());
+                GlStateManager.enableDepth();
+            } else {
+                GlStateManager.disableDepth();
+                RenderUtils.drawBox(new RenderBuilder()
+                        .position(shrunkMineBox.grow(((mineBox.minX - mineBox.maxX) * 0.5) * MathHelper.clamp(tmpDamage, 0, 1), ((mineBox.minY - mineBox.maxY) * 0.5) * MathHelper.clamp(tmpDamage, 0, 1), ((mineBox.minZ - mineBox.maxZ) * 0.5) * MathHelper.clamp(tmpDamage, 0, 1)))
+                        .color(color.getCurrentColor())
+                        .box(renderMode.getValue())
+                        .setup()
+                        .line((float) outlineWidth.getValue().getCurrent())
+                        .cull(false)
+                        .shade(false)
+                        .alpha(false)
+                        .depth(true)
+                        .blend()
+                        .texture()
+                );
+                GlStateManager.enableDepth();
+            }
         }
     }
 

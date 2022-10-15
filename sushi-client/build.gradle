@@ -13,7 +13,8 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-archivesBaseName = 'Trojan-0.5.1'
+archivesBaseName = 'Trojan'
+version = '0.5.1'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -52,6 +53,7 @@ dependencies {
 
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2854'
     implementation configurations.included
+    implementation 'club.minnced:java-discord-rpc:2.0.1'
 }
 
 mixin {

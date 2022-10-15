@@ -1,3 +1,22 @@
+/*
+ * Contact github.com/hiyama283
+ * Project "sushi-client"
+ *
+ * Copyright 2022 hiyama283
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.sushiclient.client.utils.player;
 
 import net.minecraft.block.state.IBlockState;
@@ -5,7 +24,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.sushiclient.client.IMC;
 import net.sushiclient.client.mixin.AccessorEntityPlayerSP;
 import net.sushiclient.client.utils.world.BlockPlaceInfo;
 import net.sushiclient.client.utils.world.BlockUtils;
@@ -13,7 +34,7 @@ import net.sushiclient.client.utils.world.BlockUtils;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class PositionUtils {
+public class PositionUtils implements IMC {
 
     private static final ArrayList<PositionOperator> desync = new ArrayList<>();
     private static final HashSet<PositionOperator> temp = new HashSet<>();
@@ -142,6 +163,17 @@ public class PositionUtils {
         }
 
         return validHorizontalBlocks >= 4;
+    }
+
+    public static float[] getNeededRotations(Vec3d vec) {
+        Vec3d eyesPos = new Vec3d(mc.player.posX, mc.player.posY + mc.player.getEyeHeight(), mc.player.posZ);
+        double diffX = vec.x - eyesPos.x;
+        double diffY = vec.y - eyesPos.y;
+        double diffZ = vec.z - eyesPos.z;
+        double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
+        float yaw = mc.player.rotationYaw + MathHelper.wrapDegrees((float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90F - mc.player.rotationYaw);
+        float pitch = mc.player.rotationPitch + MathHelper.wrapDegrees((float) -Math.toDegrees(Math.atan2(diffY, diffXZ)) - mc.player.rotationPitch);
+        return new float[]{yaw, pitch};
     }
 
     protected static void pop(PositionOperator closeable) {

@@ -1,16 +1,39 @@
+/*
+ * Contact github.com/hiyama283
+ * Project "sushi-client"
+ *
+ * Copyright 2022 hiyama283
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.sushiclient.client.modules.movement;
 
 import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.sushiclient.client.Sushi;
 import net.sushiclient.client.config.Configuration;
+import net.sushiclient.client.config.ConfigurationCategory;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
+import net.sushiclient.client.config.data.IntRange;
 import net.sushiclient.client.config.data.Named;
 import net.sushiclient.client.events.EventHandler;
 import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
+import net.sushiclient.client.events.player.PlayerMoveEvent;
 import net.sushiclient.client.events.player.PlayerTravelEvent;
 import net.sushiclient.client.events.tick.ClientTickEvent;
 import net.sushiclient.client.modules.*;
@@ -28,6 +51,17 @@ public class SpeedModule extends BaseModule {
     private final Configuration<Boolean> resetMotion;
     private final Configuration<Boolean> fastJump;
     private final Configuration<Boolean> jumpSkip;
+    private final Configuration<Boolean> step;
+    private final Configuration<StepMode> stepMode;
+    private final Configuration<Boolean> phase;
+    private final Configuration<Boolean> normal;
+    private final Configuration<IntRange> height;
+    private final Configuration<DoubleRange> delta;
+
+    private final Configuration<Boolean> reverse;
+    private final Configuration<IntRange> reverseHeight;
+    private final Configuration<DoubleRange> reverseMinHeight;
+
     private final Configuration<DoubleRange> factor;
     private boolean lastActive;
     private int counter;
@@ -48,6 +82,18 @@ public class SpeedModule extends BaseModule {
             TimerUtils.pop(counter);
             counter = TimerUtils.push((float) factor.getValue().getCurrent());
         });
+
+        ConfigurationCategory stepSettings = provider.getCategory("step_settings", "Step settings", null);
+        step = stepSettings.get("step", "Step", null, Boolean.class, false);
+        stepMode = stepSettings.get("mode", "Mode", null, StepMode.class, StepMode.NCP);
+        phase = stepSettings.get("phase", "Phase", null, Boolean.class, true);
+        normal = stepSettings.get("normal", "Normal", null, Boolean.class, true);
+        height = stepSettings.get("height", "Height", null, IntRange.class, new IntRange(2, 8, 1, 1), normal::getValue, false, 0);
+        delta = stepSettings.get("delta", "Delta", null, DoubleRange.class, new DoubleRange(0.1, 1, 0, 0.1, 1), normal::getValue, false, 0);
+
+        reverse = stepSettings.get("reverse", "Reverse", null, Boolean.class, true);
+        reverseHeight = stepSettings.get("reverse_height", "Reverse Height", null, IntRange.class, new IntRange(2, 8, 1, 1), reverse::getValue, false, 0);
+        reverseMinHeight = stepSettings.get("reverse_min_height", "Reverse Min Height", null, DoubleRange.class, new DoubleRange(0.3, 1, 0, 0.1, 1), reverse::getValue, false, 0);
     }
 
     @Override
@@ -75,6 +121,60 @@ public class SpeedModule extends BaseModule {
         Vec3d input = MovementUtils.getMoveInputs(getPlayer());
         if (forceSprint.getValue() && (input.x != 0 || input.z != 0)) {
             getPlayer().setSprinting(true);
+        }
+    }
+
+    private double motionX;
+    private double motionZ;
+    private double groundY;
+
+    @EventHandler(timing = EventTiming.PRE, priority = 50000)
+    public void onPrePlayerMove(PlayerMoveEvent e) {
+        motionX = getPlayer().motionX;
+        motionZ = getPlayer().motionZ;
+        if (EntityUtils.isOnGround(getPlayer())) {
+            groundY = getPlayer().posY;
+        }
+    }
+
+    @EventHandler(timing = EventTiming.POST)
+    public void onPostPlayerMove(PlayerMoveEvent e) {
+        if (!step.getValue()) return;
+        Vec3d direction = new Vec3d(motionX, 0, motionZ).normalize().scale(delta.getValue().getCurrent());
+
+        if (reverse.getValue()) {
+            for (int y = -reverseHeight.getValue().getCurrent(); y < 0; y++) {
+                AxisAlignedBB box = getPlayer().getEntityBoundingBox()
+                        .offset(direction)
+                        .offset(0, y + 0.99, 0);
+                if (getWorld().collidesWithAnyBlock(box)) continue;
+                double height = BlockUtils.getMaxHeight(box);
+                double dY = height - getPlayer().posY;
+                if (Double.isNaN(height)) continue;
+                if (dY < y) continue;
+                if (-dY < reverseMinHeight.getValue().getCurrent()) continue;
+                StepMode mode = stepMode.getValue();
+                if (mode.reverse(direction.x, dY, direction.z, height, phase.getValue())) return;
+            }
+        }
+
+        if (normal.getValue()) {
+            for (int y = height.getValue().getCurrent(); y > 0; y--) {
+                AxisAlignedBB box = getPlayer().getEntityBoundingBox()
+                        .offset(direction)
+                        .offset(0, y, 0);
+                if (getWorld().collidesWithAnyBlock(box)) continue;
+                double height = BlockUtils.getMaxHeight(box);
+                double dY = height - getPlayer().posY;
+                if (Double.isNaN(height)) continue;
+                if (dY > y) continue;
+                StepMode mode = stepMode.getValue();
+                if (mode.step(direction.x, dY, direction.z, height, phase.getValue())) {
+                    getPlayer().motionX = motionX;
+                    getPlayer().motionZ = motionZ;
+                    return;
+                }
+            }
         }
     }
 

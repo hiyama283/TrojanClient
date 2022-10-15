@@ -1,3 +1,22 @@
+/*
+ * Contact github.com/hiyama283
+ * Project "sushi-client"
+ *
+ * Copyright 2022 hiyama283
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.sushiclient.client.modules.movement;
 
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -117,23 +136,25 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
             player.motionZ = vec.y;
 
             if (getPlayer().movementInput.sneak) {
+                int underY = (int) player.posY - 1;
                 if (shiftLimit.getValue()) {
                     if (!sneakedFlag) {
-                        if (voidSafe.getValue() && player.posY - 1 <= voidY.getValue().getCurrent()) return;
-                        PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+                        if (voidSafe.getValue() && underY <= voidY.getValue().getCurrent()) return;
+                        PositionUtils.move(player.posX, underY, player.posZ, 0, 0, false, PositionMask.POSITION);
                     }
                 } else
-                    PositionUtils.move(player.posX, player.posY - 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+                    PositionUtils.move(player.posX, underY, player.posZ, 0, 0, false, PositionMask.POSITION);
                 sneakedFlag = true;
             } else if(sneakedFlag) {
                 sneakedFlag = false;
             }
             if (getPlayer().movementInput.jump) {
+                int upY = (int) (player.posY + 1);
                 if (jumpLimit.getValue()) {
                     if (!jumpedFlag)
-                        PositionUtils.move(player.posX, player.posY + 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+                        PositionUtils.move(player.posX, upY, player.posZ, 0, 0, false, PositionMask.POSITION);
                 } else
-                    PositionUtils.move(player.posX, player.posY + 1, player.posZ, 0, 0, false, PositionMask.POSITION);
+                    PositionUtils.move(player.posX, upY, player.posZ, 0, 0, false, PositionMask.POSITION);
                 jumpedFlag = true;
             } else if(jumpedFlag) {
                 jumpedFlag = false;
