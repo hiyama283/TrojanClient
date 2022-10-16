@@ -104,7 +104,7 @@ public class MainMenu extends GuiScreen {
 
     @Override
     public void initGui() {
-        MainMenu.playMusic(ChillThemeBGM.sound);
+        // MainMenu.playMusic(ChillThemeBGM.sound);
 
         buttons = new LinkedList<>();
         pm = new ParticleManager();
@@ -192,7 +192,7 @@ public class MainMenu extends GuiScreen {
         public void drawScreen(int posX, int posY, int mouseX, int mouseY) {
             if (isMouseHovering(posX, posY, 48, 48, mouseX, mouseY)) {
                 animatedSize = animate(animatedSize, 30);
-                jelloFont.drawCenteredString(name, posX + 25, posY + 60, -1);
+                jelloFont.drawCenteredString(name, posX + 30, posY + 60, -1);
             } else animatedSize = animate(animatedSize, 25);
             GL11.glColor4f(1, 1, 1, 0.75f);
             mc.getTextureManager().bindTexture(resource);

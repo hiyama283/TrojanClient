@@ -35,6 +35,7 @@ import net.sushiclient.client.events.EventHandler;
 import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.tick.ClientTickEvent;
+import net.sushiclient.client.gui.hud.elements.NotificationComponent;
 import net.sushiclient.client.modules.*;
 import net.sushiclient.client.modules.movement.PhaseWalkRewriteModule;
 import net.sushiclient.client.utils.EntityUtils;
@@ -121,7 +122,9 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         }
 
         if (onlyInHole.getValue() && (!PositionUtils.isPlayerInHole() && !PlayerUtils.isPlayerBurrow())) {
-            setEnabled(false, "You are not in hole!");
+            setEnabled(false);
+            String s = "You are not in hole!";
+            NotificationComponent.self.send(s.hashCode(), s, 1000);
             return;
         }
 
@@ -228,7 +231,9 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         if (PlayerUtils.isPlayerInClip()) return;
 
         if (Objects.isNull(InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.OBSIDIAN), InventoryType.values()))) {
-            setEnabled(false, "Cannot find trap door.");
+            setEnabled(false);
+            String s = "Cannot find obsidian!";
+            NotificationComponent.self.send(s.hashCode(), s, 1000);
             return;
         }
 
@@ -256,7 +261,9 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         switch (step) {
             case 0:
                 if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
-                    setEnabled(false, "Cannot find obsidian.");
+                    String message = "Cannot find obsidian.";
+                    setEnabled(false);
+                    NotificationComponent.self.send(message.hashCode(), message, 1000);
                     return;
                 } else {
                     InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
@@ -270,7 +277,9 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
                 break;
             case 1:
                 if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
-                    setEnabled(false, "Cannot find obsidian.");
+                    String message = "Cannot find obsidian.";
+                    setEnabled(false);
+                    NotificationComponent.self.send(message.hashCode(), message, 1000);
                     return;
                 } else {
                     InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
@@ -288,7 +297,10 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
                 if (!r) {
                     toggledOn = false;
 
-                    if (burrowOnSneak.getValue()) return;
+                    if (burrowOnSneak.getValue()) {
+                        toggledOn = false;
+                        return;
+                    }
 
                     setEnabled(false);
                 } else if (antiGhostBlock.getValue())

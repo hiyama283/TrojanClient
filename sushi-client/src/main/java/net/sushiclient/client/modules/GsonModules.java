@@ -134,6 +134,7 @@ public class GsonModules implements Modules {
         addModuleFactory("timer", TimerModule::new, true);
         addModuleFactory("announcer", AnnouncerModule::new, true);
         addModuleFactory("cleaner", CleanerModule::new, true);
+        addModuleFactory("pvp_info", PvPInfoModule::new, true);
 
         // World
         addModuleFactory("anti_ghost_block", AntiGhostBlockModule::new, true);
@@ -311,7 +312,7 @@ public class GsonModules implements Modules {
             JsonObject object = ((GsonRootConfigurations) module.getConfigurations()).save();
             JsonPrimitive enabledTag = object.getAsJsonPrimitive(ENABLED_TAG);
             if (enabledTag != null && enabledTag.getAsBoolean())
-                module.setEnabled(true);
+                module.setEnabled(true, false);
         }
     }
 
@@ -322,7 +323,7 @@ public class GsonModules implements Modules {
         saveEnableTag();
         enabled = false;
         for (Module module : modules) {
-            module.setEnabled(false);
+            module.setEnabled(false, false);
         }
     }
 

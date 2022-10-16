@@ -32,6 +32,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.Sushi;
 import net.sushiclient.client.command.LogLevel;
+import net.sushiclient.client.gui.hud.elements.NotificationComponent;
 import net.sushiclient.client.modules.Module;
 import net.sushiclient.client.modules.client.DebugModule;
 import net.sushiclient.client.utils.world.BlockUtils;
@@ -52,11 +53,11 @@ public class BurrowUtils {
     }
 
     private static void info(String message) {
-        Sushi.getProfile().getLogger().send(LogLevel.INFO, message);
+        NotificationComponent.self.send(message.hashCode(), "INFO:" + message, 1000);
     }
 
     private static void error(String message, boolean showError) {
-        if (showError) Sushi.getProfile().getLogger().send(LogLevel.ERROR, message);
+        if (showError) NotificationComponent.self.send(message.hashCode(), "ERROR:" + message, 1000);
     }
 
     public static boolean burrow(BurrowLogType logType, boolean noBurrowOnShift, boolean onlyInHole,

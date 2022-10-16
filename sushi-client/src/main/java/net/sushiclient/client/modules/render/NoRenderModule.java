@@ -21,9 +21,11 @@ package net.sushiclient.client.modules.render;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.tutorial.TutorialSteps;
+import net.minecraft.entity.item.EntityBoat;
 import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.init.MobEffects;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.server.SPacketEntity;
 import net.minecraft.network.play.server.SPacketExplosion;
 import net.minecraft.network.play.server.SPacketMaps;
 import net.minecraft.world.EnumSkyBlock;
@@ -41,6 +43,7 @@ import net.sushiclient.client.events.render.*;
 import net.sushiclient.client.events.tick.ClientTickEvent;
 import net.sushiclient.client.modules.*;
 
+import javax.swing.text.html.parser.Entity;
 import java.io.IOException;
 
 public class NoRenderModule extends BaseModule {
@@ -64,6 +67,7 @@ public class NoRenderModule extends BaseModule {
 
     private final Configuration<Boolean> explosion;
     private final Configuration<Boolean> firework;
+    private final Configuration<Boolean> boat;
 
     public NoRenderModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
@@ -89,6 +93,7 @@ public class NoRenderModule extends BaseModule {
         ConfigurationCategory world = provider.getCategory("world", "World", null);
         explosion = world.get("explosion", "Explosion", null, Boolean.class, false);
         firework = world.get("firework", "Firework", null, Boolean.class, false);
+        boat = world.get("boat", "Boat", null, Boolean.class, false);
     }
 
     @Override
@@ -191,6 +196,9 @@ public class NoRenderModule extends BaseModule {
             packet.readPacketData(write);
         } else if (e.getPacket() instanceof SPacketExplosion) {
             if (explosion.getValue()) e.setCancelled(true);
+        } else if (e.getPacket() instanceof SPacketEntity) {
+            if (((SPacketEntity) e.getPacket()).getEntity(getWorld()) instanceof EntityBoat)
+                e.setCancelled(true);
         }
     }
 }

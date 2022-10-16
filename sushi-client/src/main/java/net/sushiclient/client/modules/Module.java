@@ -40,7 +40,7 @@ public interface Module {
 
     void setEnabled(boolean enabled);
 
-    void setEnabled(boolean enabled, String message);
+    void setEnabled(boolean enabled, boolean showNotify);
 
     boolean isPaused();
 

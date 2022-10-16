@@ -121,7 +121,7 @@ public class MixinMinecraft {
             Minecraft.getMinecraft().displayGuiScreen(new MainMenu());
             ci.cancel();
         } else if (Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(ChillThemeBGM.sound)) {
-            MainMenu.stopMusic(ChillThemeBGM.sound);
+            // MainMenu.stopMusic(ChillThemeBGM.sound);
         }
     }
 }
