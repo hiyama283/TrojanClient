@@ -24,6 +24,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.EspColor;
@@ -65,7 +66,7 @@ public class BurrowESPModule extends BaseModule implements ModuleSuffix {
         target.clear();
         for (EntityPlayer nearbyPlayer : getWorld().playerEntities) {
             BlockPos blockPos = PositionUtils.toBlockPos(nearbyPlayer.getPositionVector());
-            chatLog(blockPos.getX() + ":" + blockPos.getY() + ":" + blockPos.getZ());
+            GuiLogger.send(blockPos.getX() + ":" + blockPos.getY() + ":" + blockPos.getZ());
             if (PlayerUtils.isPlayerBurrow(nearbyPlayer)) {
                 synchronized (target) {
                     target.add(blockPos);

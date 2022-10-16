@@ -19,8 +19,10 @@
 
 package net.sushiclient.client.gui.hud.elements;
 
+import net.minecraft.util.text.TextFormatting;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.Configurations;
+import net.sushiclient.client.config.data.DoubleRange;
 import net.sushiclient.client.config.data.EspColor;
 import net.sushiclient.client.config.data.IntRange;
 import net.sushiclient.client.gui.hud.BaseHudElementComponent;
@@ -44,24 +46,27 @@ public class NotificationComponent extends BaseHudElementComponent {
     private final Configuration<IntRange> heightSize;
     private final Configuration<IntRange> baseSize;
     private final Configuration<IntRange> sideWidth;
+    private final Configuration<DoubleRange> speedMulti;
     public NotificationComponent(Configurations configurations, String id, String name) {
         super(configurations, id, name);
         useColor = getConfiguration("color", "Color", null, EspColor.class,
                 new EspColor(new Color(0, 255, 0, 255), false, false));
         padding = getConfiguration("padding", "Padding", null, IntRange.class,
-                new IntRange(9, 30, 1, 1));
+                new IntRange(4, 30, 1, 1));
         widthSize = getConfiguration("width_size", "Width Size", null, IntRange.class,
-                new IntRange(15, 40, 1, 1));
+                new IntRange(16, 40, 1, 1));
         heightSize = getConfiguration("height_size", "Height Size", null, IntRange.class,
-                new IntRange(15, 40, 1, 1));
+                new IntRange(17, 40, 1, 1));
         font = getConfiguration("font", "Font", null, String.class, "LexendDeca");
         pts = getConfiguration("pts", "Pts", null, IntRange.class,
-                new IntRange(9, 30, 1, 1));
+                new IntRange(10, 30, 1, 1));
         shadow = getConfiguration("shadow", "Shadow", null, Boolean.class, true);
         baseSize = getConfiguration("base_size", "Based size", null, IntRange.class,
-                new IntRange(110, 300, 0, 10));
+                new IntRange(120, 300, 0, 10));
         sideWidth = getConfiguration("side_width", "Side width", null, IntRange.class,
-                new IntRange(2, 10, 1, 1));
+                new IntRange(5, 10, 1, 1));
+        speedMulti = getConfiguration("speed_multi", "Speed multi", null, DoubleRange.class,
+                new DoubleRange(0.5, 3, 0, 0.25, 1));
         self = this;
     }
 
@@ -76,7 +81,8 @@ public class NotificationComponent extends BaseHudElementComponent {
         notifyList.forEach((k, v) -> {
             boolean b = v.render(getWindowX(), getWindowY() + y.get(), color, settings,
                     widthSize.getValue().getCurrent(), heightSize.getValue().getCurrent(), -1,
-                    baseSize.getValue().getCurrent(), sideWidth.getValue().getCurrent());
+                    baseSize.getValue().getCurrent(), sideWidth.getValue().getCurrent(),
+                    speedMulti.getValue().getCurrent());
             if (b) {
                 notifyList.remove(k);
             }
@@ -87,11 +93,13 @@ public class NotificationComponent extends BaseHudElementComponent {
     }
 
     public void send(int id, String message, long length) {
+        message = TextFormatting.WHITE + message;
+
         synchronized (notifyList) {
             if (notifyList.containsKey(id)) {
                 NotifyInformation info = notifyList.get(id);
-                info.update(message, length);
-                notifyList.replace(id, info);
+                    info.update(message, length);
+                    notifyList.replace(id, info);
             } else {
                 notifyList.put(id, new NotifyInformation(id, message, length));
             }
@@ -127,6 +135,10 @@ public class NotificationComponent extends BaseHudElementComponent {
             return ID;
         }
 
+        public RenderStep getStep() {
+            return step;
+        }
+
         public void update(String message) {
             timer.get(0).reset();
             this.message = message;
@@ -144,11 +156,11 @@ public class NotificationComponent extends BaseHudElementComponent {
         }
 
         public boolean render(double windowX, double windowY, Color color, TextSettings settings, int width_size, int height_size,
-                              double margin, int baseSize, int sideWidth) {
+                              double margin, int baseSize, int sideWidth, double multi) {
             TextPreview preview = GuiUtils.prepareText(message, settings);
             double width = Math.max(Math.ceil(preview.getWidth() + width_size), baseSize);
             double height = preview.getHeight() + height_size;
-            double speed = message.length() * 0.25;
+            double speed = message.length() * multi;
 
             if (!step.equals(RenderStep.HIDE_ALL)) {
                 GuiUtils.drawRect(windowX, windowY, width, height, new Color(0, 0, 0, 100));
@@ -172,7 +184,7 @@ public class NotificationComponent extends BaseHudElementComponent {
                     return false;
                 }
 
-                draw(preview, sideWidth, windowX, windowY, margin, height);
+                // draw(preview, sideWidth, windowX, windowY, margin, height);
                 GuiUtils.drawRect(windowX, windowY, width, height, color);
             } else if (step.equals(RenderStep.SHOW_MSG)) {
                 boolean slideIsEnd = awa >= windowX + width;

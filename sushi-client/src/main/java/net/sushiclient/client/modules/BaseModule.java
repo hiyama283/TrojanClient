@@ -27,6 +27,7 @@ import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.Packet;
 import net.minecraft.util.text.TextFormatting;
 import net.sushiclient.client.Sushi;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.command.LogLevel;
 import net.sushiclient.client.command.Logger;
 import net.sushiclient.client.config.Configuration;
@@ -136,7 +137,7 @@ abstract public class BaseModule implements Module {
                 if (!toggleNotification.getValue() && showNotify) {
                     String s = TextFormatting.GREEN + "Enabled " + TextFormatting.WHITE
                             + TextFormatting.BOLD + getName() + TextFormatting.WHITE;
-                    NotificationComponent.self.send(getName().hashCode(), s, 2000);
+                    GuiLogger.send(getName().hashCode(), s, 2000);
                 }
 
                 // new Thread(() -> mc.getSoundHandler().playSound(ClickSound.sound)).start();
@@ -149,7 +150,7 @@ abstract public class BaseModule implements Module {
                 if (!toggleNotification.getValue() && showNotify) {
                     String s = TextFormatting.RED + "Disabled " + TextFormatting.WHITE
                             + TextFormatting.BOLD + getName() + TextFormatting.WHITE;
-                    NotificationComponent.self.send(getName().hashCode(), s, 2000);
+                    GuiLogger.send(getName().hashCode(), s, 2000);
                 }
 
                 // new Thread(() -> mc.getSoundHandler().playSound(BreakSound.sound)).start();
@@ -159,19 +160,11 @@ abstract public class BaseModule implements Module {
         }
     }
 
-    public void chatLog(LogLevel level, String message) {
-        NotificationComponent.self.send(message.hashCode(), "[" + level.name() + "] " + message, 1000);
-    }
-
-    public void chatLog(String message) {
-        NotificationComponent.self.send(message.hashCode(), "[INFO] " + message, 1000);
-    }
-
-    public void chatDebugLog(String message) {
+    protected void chatDebugLog(String message) {
         for (Module module : Sushi.getProfile().getModules().getAll()) {
             if (!(module instanceof DebugModule)) continue;
             if (module.isEnabled()) {
-                NotificationComponent.self.send(message.hashCode(), "[DEBUG] " + message, 1000);
+                GuiLogger.send(message.hashCode(), "[DEBUG] " + message, 1000);
             }
         }
     }

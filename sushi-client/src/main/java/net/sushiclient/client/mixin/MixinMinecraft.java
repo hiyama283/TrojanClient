@@ -120,8 +120,6 @@ public class MixinMinecraft {
         if ((guiScreenIn == null && Minecraft.getMinecraft().world == null) || guiScreenIn instanceof GuiMainMenu) {
             Minecraft.getMinecraft().displayGuiScreen(new MainMenu());
             ci.cancel();
-        } else if (Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(ChillThemeBGM.sound)) {
-            // MainMenu.stopMusic(ChillThemeBGM.sound);
         }
     }
 }

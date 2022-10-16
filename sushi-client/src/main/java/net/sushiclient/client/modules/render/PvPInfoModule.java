@@ -23,9 +23,7 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
-import net.sushiclient.client.Sushi;
-import net.sushiclient.client.command.ChatLogger;
-import net.sushiclient.client.command.LogLevel;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.events.EventHandler;
@@ -70,7 +68,7 @@ public class PvPInfoModule extends BaseModule {
 
         towardPlayer.forEach(b -> {
             String s = b.getName() + " has towarding you!";
-            NotificationComponent.self.send(s.hashCode(), s, 1000);
+            GuiLogger.send(s);
         });
 
         synchronized (alreadyVisualPlayer) {
@@ -98,14 +96,12 @@ public class PvPInfoModule extends BaseModule {
         }
         EntityPlayer closestPlayer = null;
         for (final EntityPlayer entity : mc.world.playerEntities) {
-            if (closestPlayer == null) {
-                closestPlayer = entity;
-            } else {
+            if (closestPlayer != null) {
                 if (closestPlayer.getDistance(enderPearl) <= entity.getDistance(enderPearl)) {
                     continue;
                 }
-                closestPlayer = entity;
             }
+            closestPlayer = entity;
         }
         if (closestPlayer == mc.player) {
             enderPearlFlag = false;
@@ -119,7 +115,7 @@ public class PvPInfoModule extends BaseModule {
             }
 
             String s = ChatFormatting.RED + closestPlayer.getName() + ChatFormatting.DARK_GRAY + " has just thrown a pearl heading " + faceing + "!";
-            NotificationComponent.self.send(s.hashCode(), s, 1000);
+            GuiLogger.send(s);
             enderPearlFlag = false;
         }
     }

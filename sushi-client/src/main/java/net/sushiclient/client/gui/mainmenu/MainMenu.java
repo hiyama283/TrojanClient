@@ -16,6 +16,7 @@ import net.minecraft.util.SoundCategory;
 import net.sushiclient.client.ModInformation;
 import net.sushiclient.client.Sushi;
 import net.sushiclient.client.gui.bgm.ChillThemeBGM;
+import net.sushiclient.client.gui.bgm.LunarEclipseBGM;
 import net.sushiclient.client.gui.mainmenu.particle.ParticleManager;
 import org.lwjgl.opengl.GL11;
 
@@ -27,6 +28,7 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,7 +36,7 @@ import static net.sushiclient.client.gui.font.FontManager.jelloFont;
 import static net.sushiclient.client.gui.font.FontManager.jelloLargeFont;
 
 public class MainMenu extends GuiScreen {
-    private static Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = Minecraft.getMinecraft();
     private static boolean soundPlayed = false;
     public static void playMusic(ISound sound) {
         if (!soundPlayed && !mc.getSoundHandler().isSoundPlaying(sound)) {
@@ -90,9 +92,15 @@ public class MainMenu extends GuiScreen {
     private int animatedX, animatedY;
     private List<CustomButton> buttons;
     private ParticleManager pm;
-
+    private ISound target;
 
     public MainMenu() {
+        ISound[] sound = new ISound[]{
+                ChillThemeBGM.sound,
+                LunarEclipseBGM.sound
+        };
+        target = sound[new Random().nextInt(sound.length)];
+
         background1 = new ResourceLocation("sushi/background/mainmenu1.png");
         background2 = new ResourceLocation("sushi/background/mainmenu2.png");
         background3 = new ResourceLocation("sushi/background/mainmenu3.png");
@@ -104,7 +112,11 @@ public class MainMenu extends GuiScreen {
 
     @Override
     public void initGui() {
-        // MainMenu.playMusic(ChillThemeBGM.sound);
+        try {
+            MainMenu.playMusic(target);
+        } catch (IllegalArgumentException ignored) {
+            Sushi.log4j.info("IllegalBruhException at playsound");
+        }
 
         buttons = new LinkedList<>();
         pm = new ParticleManager();
@@ -113,7 +125,7 @@ public class MainMenu extends GuiScreen {
         buttons.add(new CustomButton("Language", new ResourceLocation("sushi/icon/language.png"), new GuiLanguage(this, mc.gameSettings, mc.getLanguageManager())));
         buttons.add(new CustomButton("Settings", new ResourceLocation("sushi/icon/setting.png"), new GuiOptions(this, mc.gameSettings)));
         buttons.add(new CustomButton("Quit", new ResourceLocation("sushi/icon/quit.png"), null));
-        //buttons.add(new CustomButton("AltManager", new ResourceLocation("orangette/icon/altmanager.png"), null/*GuiAltManager.instance*/));
+        // buttons.add(new CustomButton("AltManager", new ResourceLocation("sushi/icon/altmanager.png"), null/*GuiAltManager.instance*/));
         super.initGui();
     }
 

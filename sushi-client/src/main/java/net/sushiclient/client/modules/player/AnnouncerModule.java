@@ -20,6 +20,7 @@
 package net.sushiclient.client.modules.player;
 
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
@@ -68,7 +69,7 @@ public class AnnouncerModule extends BaseModule {
         if (e.getEntityIn().getDistance(getPlayer()) > range.getValue().getCurrent()) return;
 
         if (e.getEntityIn() instanceof EntityPlayerSP && e.getEntityIn().isDead) {
-            chatLog(e.getEntityIn().getName() + " Has dead.");
+            GuiLogger.send(e.getEntityIn().getName() + " Has dead.");
         }
     }
 

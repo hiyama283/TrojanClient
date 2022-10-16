@@ -24,6 +24,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.Configurations;
 import net.sushiclient.client.config.data.DoubleRange;
@@ -40,6 +41,7 @@ public class ArmorWarningComponent extends TextElementComponent {
                 new DoubleRange(0.5, 1.0, 0.1, 0.1, 1));
     }
 
+    private boolean warned = false;
     @Override
     protected String getText() {
         EntityPlayerSP player = Minecraft.getMinecraft().player;
@@ -51,9 +53,17 @@ public class ArmorWarningComponent extends TextElementComponent {
 
         for (ItemStack item : items) {
             if (!(item.getItem() instanceof ItemArmor)) continue;
-            if (item.getMaxDamage() * warnPercent.getValue().getCurrent() < item.getItemDamage())
-                return TextFormatting.BOLD + TextFormatting.RED.toString() + "Armor low!" + TextFormatting.RESET;
+            if (item.getMaxDamage() * warnPercent.getValue().getCurrent() < item.getItemDamage()) {
+                String s = TextFormatting.BOLD + TextFormatting.RED.toString() + "Armor low!" + TextFormatting.RESET;
+
+                if (!warned) {
+                    GuiLogger.send(s);
+                    warned = true;
+                }
+                return s;
+            }
         }
+        warned = false;
         return "Armor isnt low.";
     }
 

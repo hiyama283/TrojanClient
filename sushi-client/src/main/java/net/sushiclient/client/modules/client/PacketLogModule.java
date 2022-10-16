@@ -20,6 +20,7 @@
 package net.sushiclient.client.modules.client;
 
 import net.minecraft.network.Packet;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.events.EventHandler;
@@ -56,7 +57,7 @@ public class PacketLogModule extends BaseModule {
     public void onPacketSendPRE(PacketSendEvent e) throws IOException {
         Packet<?> packet = e.getPacket();
 
-        chatLog("[PRE SEND] Cancelled=" + e.isCancelled() + " ");
+        GuiLogger.send("[PRE SEND] Cancelled=" + e.isCancelled() + " ");
     }
 
     @EventHandler(timing = EventTiming.POST)

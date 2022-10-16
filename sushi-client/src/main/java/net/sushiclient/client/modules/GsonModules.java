@@ -135,6 +135,7 @@ public class GsonModules implements Modules {
         addModuleFactory("announcer", AnnouncerModule::new, true);
         addModuleFactory("cleaner", CleanerModule::new, true);
         addModuleFactory("pvp_info", PvPInfoModule::new, true);
+        addModuleFactory("spammer_xd", SpammerXDModule::new, true);
 
         // World
         addModuleFactory("anti_ghost_block", AntiGhostBlockModule::new, true);

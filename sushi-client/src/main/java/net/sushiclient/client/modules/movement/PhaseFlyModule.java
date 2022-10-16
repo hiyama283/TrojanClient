@@ -48,10 +48,6 @@ public class PhaseFlyModule extends BaseModule {
     private final Configuration<Boolean> auto;
     private final Configuration<Boolean> tpsSync;
     private final Configuration<Boolean> capAt20;
-    private final Configuration<Boolean> onStartBurrow;
-    private final Configuration<Boolean> packetPlace;
-    private final Configuration<Boolean> onlyInHole;
-    private final Configuration<EnumHand> placeHand;
     private int stage;
 
     public PhaseFlyModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
@@ -63,22 +59,11 @@ public class PhaseFlyModule extends BaseModule {
         auto = provider.get("auto", "Auto Phase", null, Boolean.class, true);
         tpsSync = provider.get("tps_sync", "TPS Sync", null, Boolean.class, false);
         capAt20 = provider.get("cap_at_20", "Cap At 20", null, Boolean.class, false, tpsSync::getValue, false, 0);
-        onStartBurrow = provider.get("on_start_burrow", "On started burrow", null, Boolean.class, true);
-        packetPlace = provider.get("packet_place", "Packet place", null, Boolean.class, true, onStartBurrow::getValue,
-                false, 0);
-        onlyInHole = provider.get("only_in_hole", "Only in hole", null, Boolean.class, true, onStartBurrow::getValue,
-                false, 0);
-        placeHand = provider.get("place_hand", "Place hand", null, EnumHand.class, EnumHand.MAIN_HAND, onStartBurrow::getValue,
-                false, 0);
     }
 
     @Override
     public void onEnable() {
         EventHandlers.register(this);
-        if (onStartBurrow.getValue()) {
-            BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(), packetPlace.getValue(),
-                    0.2, placeHand.getValue(), false);
-        }
 
         for (Module m : Sushi.getProfile().getModules().getAll()) {
             if (!(m instanceof PhaseWalkRewriteModule)) return;

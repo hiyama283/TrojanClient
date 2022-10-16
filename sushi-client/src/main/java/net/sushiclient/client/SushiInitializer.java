@@ -35,7 +35,6 @@ import net.sushiclient.client.config.GsonRootConfigurations;
 import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.client.WorldLoadEvent;
-import net.sushiclient.client.gui.mainmenu.MainMenu;
 import net.sushiclient.client.gui.theme.Theme;
 import net.sushiclient.client.gui.theme.simple.SimpleTheme;
 import net.sushiclient.client.handlers.*;

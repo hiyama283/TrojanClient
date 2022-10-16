@@ -31,6 +31,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.Sushi;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.command.LogLevel;
 import net.sushiclient.client.gui.hud.elements.NotificationComponent;
 import net.sushiclient.client.modules.Module;
@@ -53,11 +54,11 @@ public class BurrowUtils {
     }
 
     private static void info(String message) {
-        NotificationComponent.self.send(message.hashCode(), "INFO:" + message, 1000);
+        GuiLogger.send(message);
     }
 
     private static void error(String message, boolean showError) {
-        if (showError) NotificationComponent.self.send(message.hashCode(), "ERROR:" + message, 1000);
+        if (showError) GuiLogger.send("ERROR:" + message);
     }
 
     public static boolean burrow(BurrowLogType logType, boolean noBurrowOnShift, boolean onlyInHole,
