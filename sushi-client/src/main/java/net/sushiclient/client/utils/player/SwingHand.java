@@ -26,11 +26,11 @@ import net.sushiclient.client.config.data.Named;
 public enum SwingHand implements Named {
     MAIN(EnumHand.MAIN_HAND, "Main"),
     OFFHAND(EnumHand.OFF_HAND, "Offhand"),
-    None(null, "None")
-    ;
+    None(null, "None");
 
     private final EnumHand hand;
     private final String name;
+
     SwingHand(EnumHand hand, String name) {
         this.hand = hand;
         this.name = name;

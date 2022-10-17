@@ -23,9 +23,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiShulkerBox;
 import net.minecraft.item.ItemShulkerBox;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntityShulkerBox;
 import net.minecraft.util.EnumHand;
 import net.sushiclient.client.command.LogLevel;
@@ -34,7 +32,6 @@ import net.sushiclient.client.command.annotation.CommandAlias;
 import net.sushiclient.client.command.annotation.Default;
 import net.sushiclient.client.utils.player.ItemSlot;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @CommandAlias(value = "peek", description = "Peek shulker")

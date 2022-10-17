@@ -19,7 +19,9 @@
 
 package net.sushiclient.client.modules.client;
 
-import club.minnced.discord.rpc.*;
+import club.minnced.discord.rpc.DiscordEventHandlers;
+import club.minnced.discord.rpc.DiscordRPC;
+import club.minnced.discord.rpc.DiscordRichPresence;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.sushiclient.client.ModInformation;
@@ -76,7 +78,8 @@ public class DiscordPRCModule extends BaseModule {
                 rpc.Discord_UpdatePresence(presence);
                 try {
                     Thread.sleep(2000);
-                } catch (InterruptedException ignored) {}
+                } catch (InterruptedException ignored) {
+                }
             }
         }, "RPC-Callback-Handler");
         thread.start();
@@ -84,8 +87,7 @@ public class DiscordPRCModule extends BaseModule {
 
     @Override
     public void onDisable() {
-        if (thread != null && !thread.isInterrupted())
-        {
+        if (thread != null && !thread.isInterrupted()) {
             thread.interrupt();
             thread = null;
         }

@@ -36,7 +36,6 @@ import java.awt.*;
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL11.GL_LINE_STRIP;
-import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
 
 public class RenderUtils {

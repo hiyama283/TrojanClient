@@ -21,9 +21,7 @@ package net.sushiclient.client.modules.combat;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.Vec3d;
-import net.sushiclient.client.command.LogLevel;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.ConfigurationCategory;
 import net.sushiclient.client.config.RootConfigurations;

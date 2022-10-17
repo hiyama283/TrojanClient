@@ -22,6 +22,7 @@ package net.sushiclient.client.utils;
 public class PhaseWalkTimer {
     private long startTime;
     private long endTime;
+
     public void start() {
         startTime = System.currentTimeMillis();
         this.endTime = 4100L;

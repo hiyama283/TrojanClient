@@ -27,6 +27,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.sushiclient.client.Sushi;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
@@ -35,6 +36,7 @@ import net.sushiclient.client.events.EventHandler;
 import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.tick.ClientTickEvent;
+import net.sushiclient.client.gui.hud.elements.NotificationComponent;
 import net.sushiclient.client.modules.*;
 import net.sushiclient.client.modules.movement.PhaseWalkRewriteModule;
 import net.sushiclient.client.utils.EntityUtils;
@@ -56,6 +58,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
     private final Configuration<Boolean> faceObsidian;
     private int tryCount;
     private int step;
+
     public TrapBurrowModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         offset = provider.get("offset", "Offset", null, DoubleRange.class, new DoubleRange(0.2, 0.6, 0.1, 0.1, 1));
@@ -120,12 +123,14 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         }
 
         if (onlyInHole.getValue() && (!PositionUtils.isPlayerInHole() && !PlayerUtils.isPlayerBurrow())) {
-            setEnabled(false, "You are not in hole!");
+            setEnabled(false);
+            String s = "You are not in hole!";
+            GuiLogger.send(s);
             return;
         }
 
         if (!placeAssistBlock.getValue() || onlyInHole.getValue() || PositionUtils.isPlayerInHole() ||
-            !BlockUtils.isAir(getWorld(), getPlayer().getPosition().add(EnumFacing.NORTH.getDirectionVec()))) {
+                !BlockUtils.isAir(getWorld(), getPlayer().getPosition().add(EnumFacing.NORTH.getDirectionVec()))) {
 
             BurrowUtils.burrow(BurrowLogType.ALL, false, onlyInHole.getValue(),
                     packetPlace.getValue(), offset.getValue().getCurrent(), placeHand.getValue(), faceObsidian.getValue());
@@ -151,7 +156,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
     }
 
     private void onBurrowed() {
-        chatLog("Successfully placed.");
+        GuiLogger.send("Successfully placed.");
 
         if (onMoveBurrowed.getValue()) {
             burrowOnMove(getPlayer());
@@ -169,10 +174,11 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
 
     private boolean toggledOn;
     private boolean sneaked;
+
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
         if (tryCount >= tryPlaceCount.getValue().getCurrent()) {
-            chatLog("Over try count.");
+            GuiLogger.send("Over try count.");
 
             if (burrowOnSneak.getValue()) {
                 toggledOn = false;
@@ -200,7 +206,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
             if (!toggledOn && !getPlayer().isSneaking()) return;
 
             if (onlyInHole.getValue() && (!PositionUtils.isPlayerInHole() && !EntityUtils.isInsideBlock(getPlayer()))) {
-                chatLog("You are not in hole!");
+                GuiLogger.send("You are not in hole!");
                 toggledOn = false;
                 sneaked = true;
                 step = 0;
@@ -226,7 +232,8 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         if (PlayerUtils.isPlayerInClip()) return;
 
         if (Objects.isNull(InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.OBSIDIAN), InventoryType.values()))) {
-            setEnabled(false, "Cannot find trap door.");
+            setEnabled(false);
+            GuiLogger.send("Cannot find obsidian!");
             return;
         }
 
@@ -254,7 +261,8 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         switch (step) {
             case 0:
                 if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
-                    setEnabled(false, "Cannot find obsidian.");
+                    setEnabled(false);
+                    GuiLogger.send("Cannot find obsidian.");
                     return;
                 } else {
                     InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
@@ -268,7 +276,8 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
                 break;
             case 1:
                 if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
-                    setEnabled(false, "Cannot find obsidian.");
+                    setEnabled(false);
+                    GuiLogger.send("Cannot find obsidian.");
                     return;
                 } else {
                     InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
@@ -286,7 +295,10 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
                 if (!r) {
                     toggledOn = false;
 
-                    if (burrowOnSneak.getValue()) return;
+                    if (burrowOnSneak.getValue()) {
+                        toggledOn = false;
+                        return;
+                    }
 
                     setEnabled(false);
                 } else if (antiGhostBlock.getValue())
