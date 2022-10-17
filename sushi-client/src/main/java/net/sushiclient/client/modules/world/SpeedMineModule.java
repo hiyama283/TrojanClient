@@ -22,7 +22,6 @@ package net.sushiclient.client.modules.world;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.audio.ElytraSound;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
@@ -64,6 +63,7 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
         PACKET("Packet"), AFTER("After"), NONE("None");
 
         private final String name;
+
         MiningMode(String name) {
             this.name = name;
         }
@@ -111,9 +111,9 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
         ConfigurationCategory rotate = provider.getCategory("rotate", "Rotate Settings", null);
         rotation = rotate.get("rotate", "Rotate", null, Boolean.class, false);
         alwaysRotate = rotate.get("always_rotate", "Always rotate", null, Boolean.class, false,
-                rotation::getValue, false ,0);
+                rotation::getValue, false, 0);
         rotateOnCanBreak = rotate.get("rotate_on_can_break", "Rotate on can break", null, Boolean.class, false,
-                rotation::getValue, false ,0);
+                rotation::getValue, false, 0);
         rotateOnBlockIsAvaiable = rotate.get("rotate_on_block_is_avaiable", "Rotate on block is avaiable", null, Boolean.class,
                 false, rotation::getValue, false, 0);
 
@@ -134,7 +134,7 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
 
         ConfigurationCategory render = provider.getCategory("render", "Render Settings", null);
         this.render = render.get("render", "Render", null, Boolean.class, true);
-        renderMode = render.get("render_mode", "Render mode",  null, RenderBuilder.Box.class, RenderBuilder.Box.BOTH,
+        renderMode = render.get("render_mode", "Render mode", null, RenderBuilder.Box.class, RenderBuilder.Box.BOTH,
                 this.render::getValue, false, 0);
         outlineWidth = render.get("outline_width", "Outline width", null, DoubleRange.class,
                 new DoubleRange(1.5, 5, 0.1, 0.1, 1),
@@ -143,7 +143,7 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
                 new EspColor(new Color(255, 0, 0, 100), false, true),
                 this.render::getValue, false, 0);
         breakColor = render.get("break_color", "Break color", null, EspColor.class,
-                new EspColor(new Color(0, 255, 0, 100), false ,true),
+                new EspColor(new Color(0, 255, 0, 100), false, true),
                 this.render::getValue, false, 0);
         useAirColor = render.get("use_air_color", "Use air color", null, Boolean.class, true,
                 this.render::getValue, false, 0);
@@ -255,6 +255,7 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
     }
 
     private boolean abortDig;
+
     @EventHandler(timing = EventTiming.PRE)
     public void onPacketSend(PacketSendEvent e) {
         if (!antiAbort.getValue()) return;
@@ -269,6 +270,7 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
     }
 
     private String suffixText = "";
+
     @Override
     public String getSuffix() {
         return suffixText;
@@ -277,7 +279,7 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
     @EventHandler(timing = EventTiming.POST)
     public void onWorldRender(WorldRenderEvent e) {
         boolean posIsNull = Objects.isNull(minePosition);
-        if (posIsNull  && !suffixText.equals("OUR")) suffixText = "";
+        if (posIsNull && !suffixText.equals("OUR")) suffixText = "";
         if (packetMine.getValue() && !posIsNull) {
             AxisAlignedBB box = getWorld().getBlockState(minePosition).getBoundingBox(getWorld(), minePosition);
             box = box.offset(minePosition).grow(0.002);
@@ -351,6 +353,7 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
 
     /**
      * Searches the most efficient item for a specified position
+     *
      * @param state The {@link IBlockState} position to find the most efficient item for
      * @return The most efficient item for the specified position
      */
@@ -360,7 +363,8 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
 
     /**
      * Finds the block strength of a specified block
-     * @param state The {@link IBlockState} block state of the specified block
+     *
+     * @param state    The {@link IBlockState} block state of the specified block
      * @param position The {@link BlockPos} position of the specified block
      * @return The block strength of the specified block
      */
@@ -387,7 +391,8 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
 
     /**
      * Check whether a specified block can be harvested
-     * @param block The {@link Block} block to check
+     *
+     * @param block    The {@link Block} block to check
      * @param position The {@link BlockPos} position of the block to check
      * @return Whether the block can be harvested
      */
@@ -424,6 +429,7 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
 
     /**
      * Finds the dig speed of a specified block
+     *
      * @param state {@link IBlockState} The block state of the specified block
      * @return The dig speed of the specified block
      */
@@ -487,6 +493,7 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
 
     /**
      * Finds the destroy speed of a specified position
+     *
      * @param state {@link IBlockState} The position to get to destroy speed for
      * @return To destroy speed of the specified position
      */

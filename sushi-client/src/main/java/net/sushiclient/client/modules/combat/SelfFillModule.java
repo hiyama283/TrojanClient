@@ -26,6 +26,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.command.LogLevel;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
@@ -73,7 +74,7 @@ public class SelfFillModule extends BaseModule {
                 }
 
                 if (Objects.isNull(targetPos)) {
-                    chatLog(LogLevel.ERROR, "Cannot find space...");
+                    GuiLogger.send("Cannot find space");
                     setEnabled(false);
                     return;
                 }
@@ -87,7 +88,7 @@ public class SelfFillModule extends BaseModule {
 
 
                 if (Objects.isNull(facing)) {
-                    chatLog(LogLevel.ERROR, "Cannot find space...");
+                    GuiLogger.send("Cannot find space");
                     setEnabled(false);
                     return;
                 }
@@ -111,7 +112,7 @@ public class SelfFillModule extends BaseModule {
                             getPlayer().onGround, PositionMask.POSITION);
                 }
             } else {
-                chatLog(LogLevel.ERROR, "You are not holding block");
+                GuiLogger.send("You are not holding block");
                 setEnabled(false);
             }
         } else if (item.getValue() == FillItem.E_CHEST) {
@@ -127,7 +128,7 @@ public class SelfFillModule extends BaseModule {
                     }
 
                     if (Objects.isNull(targetPos)) {
-                        chatLog(LogLevel.ERROR, "Cannot find space...");
+                        GuiLogger.send("Cannot find space...");
                         setEnabled(false);
                         return;
                     }
@@ -141,7 +142,7 @@ public class SelfFillModule extends BaseModule {
 
 
                     if (Objects.isNull(facing)) {
-                        chatLog(LogLevel.ERROR, "Cannot find space...");
+                        GuiLogger.send("Cannot find space...");
                         setEnabled(false);
                         return;
                     }
@@ -169,7 +170,7 @@ public class SelfFillModule extends BaseModule {
                 }
             }
 
-            chatLog(LogLevel.ERROR, "Cannot find item");
+            GuiLogger.send("Cannot find item");
         } else if (item.getValue() == FillItem.OBSIDIAN) {
             for (int i = 0; i < InventoryType.HOTBAR.getSize(); i++) {
                 if (new ItemSlot(i).getItemStack().getItem() == Item.getItemFromBlock(Blocks.OBSIDIAN)) {
@@ -183,7 +184,7 @@ public class SelfFillModule extends BaseModule {
                     }
 
                     if (Objects.isNull(targetPos)) {
-                        chatLog(LogLevel.ERROR, "Cannot find space...");
+                        GuiLogger.send("Cannot find space...");
                         setEnabled(false);
                         return;
                     }
@@ -197,7 +198,7 @@ public class SelfFillModule extends BaseModule {
 
 
                     if (Objects.isNull(facing)) {
-                        chatLog(LogLevel.ERROR, "Cannot find space...");
+                        GuiLogger.send("Cannot find space...");
                         setEnabled(false);
                         return;
                     }
@@ -225,7 +226,7 @@ public class SelfFillModule extends BaseModule {
                 }
             }
 
-            chatLog(LogLevel.ERROR, "Cannot find item");
+            GuiLogger.send("Cannot find item");
         }
 
         setEnabled(false);

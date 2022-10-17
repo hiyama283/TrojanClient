@@ -28,6 +28,7 @@ public enum BurrowLogType {
 
     private final boolean showSuccess;
     private final boolean showError;
+
     BurrowLogType(boolean showSuccess, boolean showError) {
         this.showSuccess = showSuccess;
         this.showError = showError;

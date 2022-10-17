@@ -23,24 +23,19 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemPickaxe;
-import net.minecraft.item.ItemSword;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.IntRange;
 import net.sushiclient.client.events.EventHandler;
 import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
-import net.sushiclient.client.events.player.PlayerUpdateEvent;
 import net.sushiclient.client.events.tick.ClientTickEvent;
-import net.sushiclient.client.events.tick.GameTickEvent;
 import net.sushiclient.client.modules.*;
 import net.sushiclient.client.utils.player.InventoryType;
 import net.sushiclient.client.utils.player.InventoryUtils;
 import net.sushiclient.client.utils.player.ItemSlot;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class CleanerModule extends BaseModule implements ModuleSuffix {
     private final Configuration<IntRange> sword;

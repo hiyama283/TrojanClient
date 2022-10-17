@@ -29,8 +29,6 @@ import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.Configurations;
 import net.sushiclient.client.config.data.DoubleRange;
 import net.sushiclient.client.gui.hud.BaseHudElementComponent;
-import net.sushiclient.client.utils.render.GuiUtils;
-import net.sushiclient.client.utils.render.TextPreview;
 
 import java.util.ArrayList;
 

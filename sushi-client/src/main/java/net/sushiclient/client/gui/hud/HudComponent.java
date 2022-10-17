@@ -61,6 +61,7 @@ public class HudComponent extends BasePanelComponent<HudElementComponent> {
         addElement(TrueDurabilityComponent::new, "true_durability_component", "TrueDurability");
         addElement(ArmorWarningComponent::new, "armor_warning_component", "ArmorWarning");
         addElement(TextRaderComponent::new, "text_rader_component", "TextRader");
+        addElement(NotificationComponent::new, "notification", "Notification");
     }
 
     private void addVirtual(VirtualHudElementComponent component) {

@@ -35,9 +35,9 @@ import org.lwjgl.input.Keyboard;
 
 public class ClickGuiModule extends BaseModule {
     public enum Names implements Named {
-        TROJAN("Trojan"), SHARK_SUSHI("Shark Sushi")
-        ;
+        TROJAN("Trojan"), SHARK_SUSHI("Shark Sushi");
         private final String name;
+
         Names(String name) {
             this.name = name;
         }

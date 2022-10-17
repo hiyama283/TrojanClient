@@ -25,9 +25,6 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.sushiclient.client.ModInformation;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import static net.minecraft.util.text.TextFormatting.*;
 
 public class ChatLogger implements Logger {

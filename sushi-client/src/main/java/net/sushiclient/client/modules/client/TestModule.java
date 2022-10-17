@@ -30,6 +30,7 @@ public class TestModule extends BaseModule {
     private final Configuration<DoubleRange> multiplier;
     private final Configuration<IntRange> input;
     private final Configuration<TestSelectList> motionFacing;
+
     public TestModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         multiplier = provider.get("multiplier", "Multiplier", null, DoubleRange.class, new DoubleRange(0.5, 2, 0.1, 0.1, 1));
@@ -44,7 +45,7 @@ public class TestModule extends BaseModule {
         if (motionFacing.getValue() == TestSelectList.X) {
             mc.player.motionX = 0;
             mc.player.motionX = input.getValue().getCurrent() * multiplier.getValue().getCurrent();
-        } else if(motionFacing.getValue() == TestSelectList.Z) {
+        } else if (motionFacing.getValue() == TestSelectList.Z) {
             mc.player.motionZ = 0;
             mc.player.motionZ = input.getValue().getCurrent() * multiplier.getValue().getCurrent();
         } else {

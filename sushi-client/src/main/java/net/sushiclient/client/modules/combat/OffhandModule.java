@@ -48,7 +48,7 @@ public class OffhandModule extends BaseModule {
     private final Configuration<Boolean> crystalCheck;
     private final Configuration<Boolean> swordGap;
     private final Configuration<Boolean> rightClickGap;
-//    private final Configuration<Boolean> fallCheck;
+    //    private final Configuration<Boolean> fallCheck;
     private final Configuration<Boolean> totemOnElytra;
     private final Configuration<Boolean> preferInventory;
     private final Configuration<Boolean> switchPlayerIsNear;
@@ -100,6 +100,7 @@ public class OffhandModule extends BaseModule {
     }
 
     private boolean rightPress = false;
+
     public SwitchTarget getSwitchTarget() {
         if (totemOnElytra.getValue() && getPlayer().isElytraFlying()) {
             return SwitchTarget.TOTEM;
@@ -109,7 +110,7 @@ public class OffhandModule extends BaseModule {
                 < totemHelth.getValue().getCurrent()) {
             return SwitchTarget.TOTEM;
         } else if (swordGap.getValue() && (ItemSlot.current().getItemStack().getItem()
-                 == Items.DIAMOND_SWORD) && isItemValid(SwitchTarget.GAPPLE.getItem())) {
+                == Items.DIAMOND_SWORD) && isItemValid(SwitchTarget.GAPPLE.getItem())) {
             return SwitchTarget.GAPPLE;
         } else if (rightClickGap.getValue() && rightPress && ItemSlot.current().getItemStack()
                 .getItem() == Items.DIAMOND_SWORD && isItemValid(SwitchTarget.GAPPLE.getItem())) {

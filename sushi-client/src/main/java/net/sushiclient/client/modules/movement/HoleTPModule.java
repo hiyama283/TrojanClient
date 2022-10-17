@@ -20,6 +20,7 @@
 package net.sushiclient.client.modules.movement;
 
 import net.minecraft.util.math.BlockPos;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
@@ -37,6 +38,7 @@ import java.util.List;
 
 public class HoleTPModule extends BaseModule {
     private final Configuration<DoubleRange> range;
+
     public HoleTPModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         range = provider.get("range", "range", "Can teleport range", DoubleRange.class, new DoubleRange(2.5, 5, 0.1, 0.1, 1));
@@ -82,12 +84,12 @@ public class HoleTPModule extends BaseModule {
             BlockPos mostNearPos = mostNear.getBlockPos()[0];
             if (mostNearDistance <= range.getValue().getCurrent()) {
                 PositionUtils.move(mostNearPos.getX(), mostNearPos.getY(), mostNearPos.getZ(), 0, 0, mc.player.onGround, PositionMask.POSITION);
-                chatLog("Success fully teleported.");
-                chatLog("debug distance:" + mostNear.distance() + " X:" + mostNearPos.getX() + " Y:" + mostNearPos.getY() + " Z:" + mostNearPos.getZ()  );
+                GuiLogger.send("Success fully teleported.");
+                chatDebugLog("debug distance:" + mostNear.distance() + " X:" + mostNearPos.getX() + " Y:" + mostNearPos.getY() + " Z:" + mostNearPos.getZ());
             } else
-                chatLog("Hole not found.");
+                GuiLogger.send("Hole not found.");
         } catch (IndexOutOfBoundsException ignored) {
-            chatLog("Hole not found.");
+            GuiLogger.send("Hole not found.");
         }
 
         setEnabled(false);

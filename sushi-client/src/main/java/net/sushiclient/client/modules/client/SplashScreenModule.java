@@ -27,6 +27,7 @@ import net.sushiclient.client.modules.*;
 
 public class SplashScreenModule extends BaseModule {
     private final Configuration<IntRange> backgroundId;
+
     public SplashScreenModule(String id, Modules modules, Categories categories, RootConfigurations provider, ModuleFactory factory) {
         super(id, modules, categories, provider, factory);
         backgroundId = provider.get("back_ground_id", "Background id", null, IntRange.class,

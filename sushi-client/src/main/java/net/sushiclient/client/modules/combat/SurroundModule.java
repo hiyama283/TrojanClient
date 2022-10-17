@@ -57,7 +57,7 @@ public class SurroundModule extends BaseModule {
     private final Configuration<Boolean> antiGhostBlock;
     private final Collection<Vec3i> checked = Collections.newSetFromMap(new WeakHashMap<>());
     private boolean running;
-    private static final BlockPos[] surroundPos = new BlockPos[] {
+    private static final BlockPos[] surroundPos = new BlockPos[]{
             new BlockPos(0, -1, 0),
             new BlockPos(1, -1, 0),
             new BlockPos(-1, -1, 0),

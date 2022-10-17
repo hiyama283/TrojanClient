@@ -31,6 +31,7 @@ import net.sushiclient.client.utils.world.BlockUtils;
 
 public class PlayerUtils {
     public static Minecraft mc = Minecraft.getMinecraft();
+
     public static double getDistance(Entity e) {
         return mc.player.getDistance(e);
     }

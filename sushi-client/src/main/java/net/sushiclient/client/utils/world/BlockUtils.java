@@ -123,6 +123,7 @@ public class BlockUtils {
         float f2 = (float) (vec.z - (double) pos.getZ());
         mc.player.connection.sendPacket(new CPacketPlayerTryUseItemOnBlock(pos, direction, placeHand, f, f1, f2));
     }
+
     public static void rightClickBlock(BlockPos pos, EnumFacing facing, Vec3d hVec, boolean packet, EnumHand placeHand) {
         Vec3d hitVec = (new Vec3d(pos)).add(hVec).add((new Vec3d(facing.getDirectionVec())).scale(0.5D));
 

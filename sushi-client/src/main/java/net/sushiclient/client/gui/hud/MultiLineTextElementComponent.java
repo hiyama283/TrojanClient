@@ -25,7 +25,6 @@ import net.sushiclient.client.utils.render.TextPreview;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 abstract public class MultiLineTextElementComponent extends BaseHudElementComponent {

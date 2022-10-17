@@ -36,6 +36,7 @@ public enum AutoTrapBlocks implements Named {
 
     private final Block block;
     private final String name;
+
     AutoTrapBlocks(Block useBlock, String name) {
         block = useBlock;
         this.name = name;

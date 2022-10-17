@@ -27,6 +27,7 @@ import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.Packet;
 import net.minecraft.util.text.TextFormatting;
 import net.sushiclient.client.Sushi;
+import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.command.LogLevel;
 import net.sushiclient.client.command.Logger;
 import net.sushiclient.client.config.Configuration;
@@ -34,9 +35,8 @@ import net.sushiclient.client.config.ConfigurationCategory;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.gui.hud.ElementConstructor;
 import net.sushiclient.client.gui.hud.ElementFactory;
+import net.sushiclient.client.gui.hud.elements.NotificationComponent;
 import net.sushiclient.client.modules.client.DebugModule;
-import net.sushiclient.client.utils.elements.sound.BreakSound;
-import net.sushiclient.client.utils.elements.sound.ClickSound;
 
 import java.util.ArrayList;
 
@@ -123,53 +123,48 @@ abstract public class BaseModule implements Module {
 
     @Override
     public void setEnabled(boolean enabled) {
+        setEnabled(enabled, true);
+    }
+
+    @Override
+    public void setEnabled(boolean enabled, boolean showNotify) {
         if (!paused) {
             Logger handler = Sushi.getProfile().getLogger();
             if (!this.enabled && enabled) {
                 this.enabled = true;
                 handlers.forEach(it -> it.setEnabled(true));
-                handler.send(LogLevel.INFO, TextFormatting.GREEN + "Enabled " + TextFormatting.RESET
-                        + TextFormatting.BOLD + getName() + TextFormatting.RESET);
+
+                if (!toggleNotification.getValue() && showNotify) {
+                    String s = TextFormatting.GREEN + "Enabled " + TextFormatting.WHITE
+                            + TextFormatting.BOLD + getName() + TextFormatting.WHITE;
+                    GuiLogger.send(getName().hashCode(), s, 2000);
+                }
 
                 // new Thread(() -> mc.getSoundHandler().playSound(ClickSound.sound)).start();
 
                 onEnable();
-                // if (toggleNotification.getValue()) {
-                // }
             } else if (this.enabled && !enabled) {
                 this.enabled = false;
                 handlers.forEach(it -> it.setEnabled(false));
-                handler.send(LogLevel.INFO, TextFormatting.RED + "Disabled " + TextFormatting.RESET
-                        + TextFormatting.BOLD + getName() + TextFormatting.RESET);
+
+                if (!toggleNotification.getValue() && showNotify) {
+                    String s = TextFormatting.RED + "Disabled " + TextFormatting.WHITE
+                            + TextFormatting.BOLD + getName() + TextFormatting.WHITE;
+                    GuiLogger.send(getName().hashCode(), s, 2000);
+                }
 
                 // new Thread(() -> mc.getSoundHandler().playSound(BreakSound.sound)).start();
 
                 onDisable();
-                // if (toggleNotification.getValue()) {
-                // }
             }
         }
     }
 
-    @Override
-    public void setEnabled(boolean enabled, String message) {
-        this.setEnabled(enabled);
-        chatLog(message);
-    }
-
-    public void chatLog(LogLevel level, String message) {
-        Sushi.getProfile().getLogger().send(level, message);
-    }
-
-    public void chatLog(String message) {
-        this.chatLog(LogLevel.INFO, message);
-    }
-
-    public void chatDebugLog(String message) {
+    protected void chatDebugLog(String message) {
         for (Module module : Sushi.getProfile().getModules().getAll()) {
             if (!(module instanceof DebugModule)) continue;
             if (module.isEnabled()) {
-                chatLog(message);
+                GuiLogger.send(message.hashCode(), "[DEBUG] " + message, 1000);
             }
         }
     }
