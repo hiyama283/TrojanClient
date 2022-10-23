@@ -20,6 +20,7 @@
 package net.sushiclient.client;
 
 import net.sushiclient.client.account.MojangAccounts;
+import net.sushiclient.client.events.EventManager;
 import net.sushiclient.client.gui.theme.Theme;
 import org.apache.logging.log4j.LogManager;
 
@@ -32,6 +33,7 @@ public class Sushi {
     private static Theme defaultTheme;
     private static final List<Theme> themes = new ArrayList<>();
     private static MojangAccounts mojangAccounts;
+    private static final EventManager eventManager = new EventManager();
 
     public static final org.apache.logging.log4j.Logger log4j = LogManager.getLogger(ModInformation.name);
 
@@ -65,6 +67,9 @@ public class Sushi {
 
     public static List<Theme> getThemes() {
         return new ArrayList<>(themes);
+    }
+    public static EventManager getEventManager() {
+        return eventManager;
     }
 
     public static void setThemes(List<Theme> themes) {

@@ -30,6 +30,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextFormatting;
 import net.sushiclient.client.Sushi;
 import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.command.LogLevel;
@@ -58,7 +59,7 @@ public class BurrowUtils {
     }
 
     private static void error(String message, boolean showError) {
-        if (showError) GuiLogger.send("ERROR:" + message);
+        if (showError) GuiLogger.send(TextFormatting.RED + message);
     }
 
     public static boolean burrow(BurrowLogType logType, boolean noBurrowOnShift, boolean onlyInHole,

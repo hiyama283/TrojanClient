@@ -26,6 +26,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.sushiclient.client.Sushi;
 import net.sushiclient.client.command.GuiLogger;
 import net.sushiclient.client.config.Configuration;
@@ -45,7 +46,7 @@ import net.sushiclient.client.utils.world.BlockUtils;
 
 import java.util.Objects;
 
-public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
+public class TrapBurrowModule extends BaseModule {
     private final Configuration<DoubleRange> offset;
     private final Configuration<Boolean> packetPlace;
     private final Configuration<EnumHand> placeHand;
@@ -125,7 +126,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
         if (onlyInHole.getValue() && (!PositionUtils.isPlayerInHole() && !PlayerUtils.isPlayerBurrow())) {
             setEnabled(false);
             String s = "You are not in hole!";
-            GuiLogger.send(s);
+            GuiLogger.send(TextFormatting.RED + s);
             return;
         }
 
@@ -178,7 +179,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
         if (tryCount >= tryPlaceCount.getValue().getCurrent()) {
-            GuiLogger.send("Over try count.");
+            GuiLogger.send(TextFormatting.RED + "Over try count.");
 
             if (burrowOnSneak.getValue()) {
                 toggledOn = false;
@@ -206,7 +207,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
             if (!toggledOn && !getPlayer().isSneaking()) return;
 
             if (onlyInHole.getValue() && (!PositionUtils.isPlayerInHole() && !EntityUtils.isInsideBlock(getPlayer()))) {
-                GuiLogger.send("You are not in hole!");
+                GuiLogger.send(TextFormatting.RED + "You are not in hole!");
                 toggledOn = false;
                 sneaked = true;
                 step = 0;
@@ -233,7 +234,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
 
         if (Objects.isNull(InventoryUtils.findItemSlot(Item.getItemFromBlock(Blocks.OBSIDIAN), InventoryType.values()))) {
             setEnabled(false);
-            GuiLogger.send("Cannot find obsidian!");
+            GuiLogger.send(TextFormatting.RED + "Cannot find obsidian!");
             return;
         }
 
@@ -262,7 +263,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
             case 0:
                 if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
                     setEnabled(false);
-                    GuiLogger.send("Cannot find obsidian.");
+                    GuiLogger.send(TextFormatting.RED + "Cannot find obsidian!");
                     return;
                 } else {
                     InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
@@ -277,7 +278,7 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
             case 1:
                 if (obsidianSlot == null || Objects.isNull(mc.player) || Objects.isNull(mc.world)) {
                     setEnabled(false);
-                    GuiLogger.send("Cannot find obsidian.");
+                    GuiLogger.send(TextFormatting.RED + "Cannot find obsidian!");
                     return;
                 } else {
                     InventoryUtils.silentSwitch(packetPlace.getValue(), obsidianSlot.getIndex(), () -> {
@@ -321,17 +322,5 @@ public class TrapBurrowModule extends BaseModule implements ModuleSuffix {
     @Override
     public Category getDefaultCategory() {
         return Category.WORLD;
-    }
-
-    @Override
-    public String getSuffix() {
-        if (!burrowOnSneak.getValue()) return null;
-
-        if (PlayerUtils.isPlayerInClip()) {
-            return "Clipping! cant place";
-        } else if (toggledOn) {
-            return "On step=" + step + " try=" + tryCount;
-        } else
-            return "No places";
     }
 }

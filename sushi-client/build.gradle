@@ -54,6 +54,7 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2854'
     implementation configurations.included
     implementation 'club.minnced:java-discord-rpc:2.0.1'
+    compileOnly 'com.yworks:yguard:3.1.0'
 }
 
 mixin {
@@ -87,4 +88,21 @@ sourceSets {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+task yguard {
+    group 'yGuard'
+    description 'Obfuscates and shrinks the java archive.'
+
+    doLast {
+        ant.taskdef(
+                name: 'yguard',
+                classname: 'com.yworks.yguard.YGuardTask',
+                classpath: sourceSets.main.compileClasspath.asPath
+        )
+
+        ant.yguard {
+            // see the yGuard task documentation for information about the yGuard element
+        }
+    }
 }

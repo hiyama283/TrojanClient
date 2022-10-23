@@ -17,20 +17,18 @@
  * limitations under the License.
  */
 
-package net.sushiclient.client.command;
+package net.sushiclient.client.modules;
 
-import net.sushiclient.client.gui.hud.elements.NotificationComponent;
+import java.awt.*;
 
-public final class GuiLogger {
-    public static void send(int id, String message, long length) {
-        NotificationComponent.self.send(id, message, length);
+public class TextCategory implements Category {
+    @Override
+    public String getName() {
+        return null;
     }
 
-    public static void send(String message, long length) {
-        send(message.hashCode(), message, length);
-    }
-
-    public static void send(String message) {
-        send(message.hashCode(), message, 2000);
+    @Override
+    public Image getIcon() {
+        return null;
     }
 }

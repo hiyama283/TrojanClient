@@ -19,6 +19,10 @@
 
 package net.sushiclient.client.modules;
 
+import net.sushiclient.client.config.data.EspColor;
+import net.sushiclient.client.utils.render.GuiUtils;
+import net.sushiclient.client.utils.render.TextPreview;
+
 import java.awt.*;
 
 public interface Category {
@@ -34,6 +38,28 @@ public interface Category {
 
     static Category[] getDefaultCategories() {
         return new Category[]{COMBAT, MOVEMENT, RENDER, PLAYER, WORLD};
+    }
+
+    static TextPreview getIconTextPreview(String text, EspColor color) {
+        return GuiUtils.prepareText(text, "IconFont", color, 9, true);
+    }
+
+    static TextPreview getTextIcons(Category category, EspColor color) {
+        String name = category.getName();
+        if (name.equals(COMBAT.getName())) {
+            return getIconTextPreview("b", color);
+        } else if (name.equals(MOVEMENT.getName())) {
+            return getIconTextPreview("8", color);
+        } else if (name.equals(RENDER.getName())) {
+            return getIconTextPreview("a", color);
+        } else if (name.equals(PLAYER.getName())) {
+            return getIconTextPreview("c", color);
+        } else if (name.equals(WORLD.getName())) {
+            return getIconTextPreview("3", color);
+        } else if (name.equals(CLIENT.getName())) {
+            return getIconTextPreview("9", color);
+        }
+        return null;
     }
 
     String getName();

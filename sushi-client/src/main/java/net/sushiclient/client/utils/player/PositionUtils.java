@@ -22,6 +22,7 @@ package net.sushiclient.client.utils.player;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -77,6 +78,10 @@ public class PositionUtils implements IMC {
 
     public static BlockPos toBlockPos(Vec3d vec3d) {
         return new BlockPos(vec3d.x, vec3d.y, vec3d.z);
+    }
+
+    public static BlockPos getBlockPos(EntityPlayer player) {
+        return toBlockPos(player.getPositionVector());
     }
 
     public static void update() {

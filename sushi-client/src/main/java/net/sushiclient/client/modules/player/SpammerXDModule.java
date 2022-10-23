@@ -19,9 +19,7 @@
 
 package net.sushiclient.client.modules.player;
 
-import net.minecraft.network.play.client.CPacketChatMessage;
 import net.sushiclient.client.Sushi;
-import net.sushiclient.client.command.ChatLogger;
 import net.sushiclient.client.command.LogLevel;
 import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
@@ -31,7 +29,7 @@ import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.client.WorldLoadEvent;
 import net.sushiclient.client.events.tick.GameTickEvent;
 import net.sushiclient.client.modules.*;
-import org.codehaus.plexus.util.FileUtils;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,7 +63,7 @@ public class SpammerXDModule extends BaseModule {
 
         if (Files.exists(spammer.toPath())) {
             try {
-                content = FileUtils.fileRead(spammer);
+                content = FileUtils.readFileToString(spammer, "UTF-8");
             } catch (IOException e) {
                 Sushi.getProfile().getLogger().send(LogLevel.ERROR, "Error:" + e.getMessage());
             }
@@ -74,7 +72,7 @@ public class SpammerXDModule extends BaseModule {
                 Files.createFile(spammer.toPath());
 
                 String data = "Hello!";
-                FileUtils.fileWrite(spammer, data);
+                FileUtils.writeStringToFile(spammer, data, "UTF-8");
                 content = data;
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -99,8 +97,6 @@ public class SpammerXDModule extends BaseModule {
             s.append(content.trim());
 
             getPlayer().sendChatMessage(s.toString() + new Random().nextInt(100000));
-
-            delayCount++;
         }
     }
 

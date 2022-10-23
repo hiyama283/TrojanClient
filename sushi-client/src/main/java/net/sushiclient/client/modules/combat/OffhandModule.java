@@ -40,6 +40,9 @@ import net.sushiclient.client.utils.combat.DamageUtils;
 import net.sushiclient.client.utils.player.InventoryType;
 import net.sushiclient.client.utils.player.InventoryUtils;
 import net.sushiclient.client.utils.player.ItemSlot;
+import org.lwjgl.input.Mouse;
+
+import java.awt.*;
 
 public class OffhandModule extends BaseModule {
 
@@ -99,8 +102,6 @@ public class OffhandModule extends BaseModule {
         return slot != null;
     }
 
-    private boolean rightPress = false;
-
     public SwitchTarget getSwitchTarget() {
         if (totemOnElytra.getValue() && getPlayer().isElytraFlying()) {
             return SwitchTarget.TOTEM;
@@ -112,7 +113,7 @@ public class OffhandModule extends BaseModule {
         } else if (swordGap.getValue() && (ItemSlot.current().getItemStack().getItem()
                 == Items.DIAMOND_SWORD) && isItemValid(SwitchTarget.GAPPLE.getItem())) {
             return SwitchTarget.GAPPLE;
-        } else if (rightClickGap.getValue() && rightPress && ItemSlot.current().getItemStack()
+        } else if (rightClickGap.getValue() && Mouse.isButtonDown(1) && ItemSlot.current().getItemStack()
                 .getItem() == Items.DIAMOND_SWORD && isItemValid(SwitchTarget.GAPPLE.getItem())) {
             return SwitchTarget.GAPPLE;
         }
@@ -163,20 +164,6 @@ public class OffhandModule extends BaseModule {
             return;
         }
         InventoryUtils.moveTo(itemSlot, ItemSlot.offhand());
-    }
-
-    @EventHandler(timing = EventTiming.PRE)
-    public void onRightClickPress(MousePressEvent e) {
-        if (e.getClickType() != ClickType.RIGHT) return;
-        // chatLog("Pressed");
-        rightPress = true;
-    }
-
-    @EventHandler(timing = EventTiming.PRE)
-    public void onRightClickRelease(MouseReleaseEvent e) {
-        if (e.getClickType() != ClickType.RIGHT) return;
-        // chatLog("Release");
-        rightPress = false;
     }
 
     @Override

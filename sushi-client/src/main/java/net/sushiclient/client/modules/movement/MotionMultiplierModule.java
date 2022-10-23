@@ -23,12 +23,14 @@ import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.DoubleRange;
 import net.sushiclient.client.events.EventHandler;
+import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.tick.ClientTickEvent;
 import net.sushiclient.client.modules.*;
 
 public class MotionMultiplierModule extends BaseModule {
     private final Configuration<DoubleRange> multiplier;
+    private final Configuration<Boolean> stopMotion;
     private final Configuration<Boolean> X;
     private final Configuration<Boolean> Y;
     private final Configuration<Boolean> Z;
@@ -37,13 +39,24 @@ public class MotionMultiplierModule extends BaseModule {
         super(id, modules, categories, provider, factory);
         multiplier = provider.get("multiplier", "Multiplier", null, DoubleRange.class,
                 new DoubleRange(1.5, 5, 0.1, 0.1, 1));
+        stopMotion = provider.get("stop_motion", "Stop motion", null, Boolean.class, true);
         X = provider.get("x", "X", null, Boolean.class, true);
         Y = provider.get("y", "Y", null, Boolean.class, false);
         Z = provider.get("z", "Z", null, Boolean.class, true);
     }
 
+    private void stopMotion() {
+        getPlayer().motionX = 0;
+        getPlayer().motionY = 0;
+        getPlayer().motionZ = 0;
+    }
+
     @EventHandler(timing = EventTiming.PRE)
     public void onClientTick(ClientTickEvent e) {
+        if (stopMotion.getValue()) {
+            stopMotion();
+        }
+
         if (X.getValue()) {
             getPlayer().motionX *= multiplier.getValue().getCurrent();
         }
@@ -55,6 +68,16 @@ public class MotionMultiplierModule extends BaseModule {
         if (Z.getValue()) {
             getPlayer().motionZ *= multiplier.getValue().getCurrent();
         }
+    }
+
+    @Override
+    public void onEnable() {
+        EventHandlers.register(this);
+    }
+
+    @Override
+    public void onDisable() {
+        EventHandlers.unregister(this);
     }
 
     @Override

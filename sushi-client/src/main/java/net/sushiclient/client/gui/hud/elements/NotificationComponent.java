@@ -33,6 +33,7 @@ import net.sushiclient.client.utils.render.TextSettings;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class NotificationComponent extends BaseHudElementComponent {
@@ -72,24 +73,40 @@ public class NotificationComponent extends BaseHudElementComponent {
 
     private final HashMap<Integer, NotifyInformation> notifyList = new HashMap<>();
 
+    private int calc(double height, int padding, int heightSize, boolean toUpSide) {
+        int positiveResult = (int) (height + padding + heightSize);
+        if (toUpSide)
+            return -positiveResult;
+        else
+            return positiveResult;
+    }
+
     @Override
     public void onRender() {
         Color color = useColor.getValue().getCurrentColor();
         TextSettings settings = new TextSettings(font.getValue(), useColor.getValue(), pts.getValue().getCurrent(), shadow.getValue());
 
         AtomicInteger y = new AtomicInteger(0);
-        notifyList.forEach((k, v) -> {
-            boolean b = v.render(getWindowX(), getWindowY() + y.get(), color, settings,
-                    widthSize.getValue().getCurrent(), heightSize.getValue().getCurrent(), -1,
-                    baseSize.getValue().getCurrent(), sideWidth.getValue().getCurrent(),
-                    speedMulti.getValue().getCurrent());
-            if (b) {
-                notifyList.remove(k);
-            }
+        boolean finalRightSide = (GuiUtils.getWidth() / 2) <= getWindowX();
+        boolean finalUpSide = (GuiUtils.getHeight() / 2) <= getWindowY();
 
-            double height = GuiUtils.prepareText(v.message, settings).getHeight();
-            y.addAndGet((int) -(height + padding.getValue().getCurrent() + heightSize.getValue().getCurrent()));
-        });
+        HashSet<Integer> removeList = new HashSet<>();
+        synchronized (notifyList) {
+            notifyList.forEach((k, v) -> {
+                boolean b = v.render(getWindowX(), getWindowY() + y.get(), color, settings,
+                        widthSize.getValue().getCurrent(), heightSize.getValue().getCurrent(), -1,
+                        baseSize.getValue().getCurrent(), sideWidth.getValue().getCurrent(),
+                        speedMulti.getValue().getCurrent(), finalRightSide);
+                if (b) {
+                    removeList.add(k);
+                }
+
+                double height = GuiUtils.prepareText(v.message, settings).getHeight();
+                y.addAndGet(calc(height, padding.getValue().getCurrent(), heightSize.getValue().getCurrent(), finalUpSide));
+            });
+
+            removeList.forEach(notifyList::remove);
+        }
     }
 
     public void send(int id, String message, long length) {
@@ -108,8 +125,8 @@ public class NotificationComponent extends BaseHudElementComponent {
 
     @Override
     public void onRelocate() {
-        setWidth(150);
-        setHeight(35);
+        setWidth(baseSize.getValue().getCurrent());
+        setHeight(heightSize.getValue().getCurrent());
     }
 
     private static class NotifyInformation {
@@ -156,11 +173,19 @@ public class NotificationComponent extends BaseHudElementComponent {
         }
 
         public boolean render(double windowX, double windowY, Color color, TextSettings settings, int width_size, int height_size,
-                              double margin, int baseSize, int sideWidth, double multi) {
+                              double margin, int baseSize, int sideWidth, double multi, boolean right) {
+
             TextPreview preview = GuiUtils.prepareText(message, settings);
             double width = Math.max(Math.ceil(preview.getWidth() + width_size), baseSize);
-            double height = preview.getHeight() + height_size;
+            double height = Math.max((preview.getHeight() + height_size), 25);
             double speed = message.length() * multi;
+
+            if (right) {
+                if (baseSize <= Math.ceil(preview.getWidth() + width_size)) {
+                    width = Math.ceil(preview.getWidth() + width_size);
+                    windowX = windowX - (Math.ceil(preview.getWidth() + width_size) - baseSize);
+                }
+            }
 
             if (!step.equals(RenderStep.HIDE_ALL)) {
                 GuiUtils.drawRect(windowX, windowY, width, height, new Color(0, 0, 0, 100));
@@ -180,7 +205,6 @@ public class NotificationComponent extends BaseHudElementComponent {
             } else if (step.equals(RenderStep.FILLED_BY_ENTRY)) {
                 if (timer.get(1).isEnd()) {
                     step = step.next();
-                    timer.get(0).reset();
                     return false;
                 }
 
@@ -188,19 +212,24 @@ public class NotificationComponent extends BaseHudElementComponent {
                 GuiUtils.drawRect(windowX, windowY, width, height, color);
             } else if (step.equals(RenderStep.SHOW_MSG)) {
                 boolean slideIsEnd = awa >= windowX + width;
-                if (slideIsEnd && timer.get(0).isEnd()) {
+                if (slideIsEnd) {
                     step = step.next();
                     awa = 0;
+                    timer.get(0).reset();
+                    return false;
+                }
+
+                GuiUtils.drawRect(windowX, windowY, sideWidth, height, color);
+                GuiUtils.drawRect(windowX, windowY, (windowX + width) - awa, height, color);
+                awa += speed;
+            } else if (step.equals(RenderStep.KEEP_MSG)) {
+                if (timer.get(0).isEnd()) {
+                    step = step.next();
                     return false;
                 }
 
                 draw(preview, sideWidth, windowX, windowY, margin, height);
                 GuiUtils.drawRect(windowX, windowY, sideWidth, height, color);
-
-                if (!slideIsEnd) {
-                    GuiUtils.drawRect(windowX, windowY, (windowX + width) - awa, height, color);
-                    awa += speed;
-                }
             } else if (step.equals(RenderStep.HIDE_MSG)) {
                 if (awa >= width) {
                     step = step.next();
@@ -209,7 +238,7 @@ public class NotificationComponent extends BaseHudElementComponent {
                     return false;
                 }
 
-                draw(preview, sideWidth, windowX, windowY, margin, height);
+                // draw(preview, sideWidth, windowX, windowY, margin, height);
                 GuiUtils.drawRect(windowX, windowY, awa, height, color);
                 awa += speed;
             } else if (step.equals(RenderStep.FILLED_BY_HIDE_MSG)) {
@@ -260,9 +289,10 @@ public class NotificationComponent extends BaseHudElementComponent {
         public static final RenderStep ENTRY = new RenderStep(0);
         public static final RenderStep FILLED_BY_ENTRY = new RenderStep(1);
         public static final RenderStep SHOW_MSG = new RenderStep(2);
-        public static final RenderStep HIDE_MSG = new RenderStep(3);
-        public static final RenderStep FILLED_BY_HIDE_MSG = new RenderStep(4);
-        public static final RenderStep HIDE_ALL = new RenderStep(5);
+        public static final RenderStep KEEP_MSG = new RenderStep(3);
+        public static final RenderStep HIDE_MSG = new RenderStep(4);
+        public static final RenderStep FILLED_BY_HIDE_MSG = new RenderStep(5);
+        public static final RenderStep HIDE_ALL = new RenderStep(6);
 
         private final int step;
         private RenderStep(int integerStep) {
@@ -280,10 +310,12 @@ public class NotificationComponent extends BaseHudElementComponent {
                 case 1:
                     return SHOW_MSG;
                 case 2:
-                    return HIDE_MSG;
+                    return KEEP_MSG;
                 case 3:
-                    return FILLED_BY_HIDE_MSG;
+                    return HIDE_MSG;
                 case 4:
+                    return FILLED_BY_HIDE_MSG;
+                case 5:
                     return HIDE_ALL;
             }
 

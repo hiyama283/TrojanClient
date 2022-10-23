@@ -95,11 +95,12 @@ public class GsonModules implements Modules {
         addModuleFactory("speed", SpeedModule::new, true);
         addModuleFactory("sprint", SprintModule::new, true);
         addModuleFactory("step", StepModule::new, true);
-        addModuleFactory("holetp", HoleTPModule::new, true);
+        addModuleFactory("holetp", HoleTPModule::new, false);
         addModuleFactory("phase_walk_rewrite", PhaseWalkRewriteModule::new, true);
         addModuleFactory("fast_stop", FastStopModule::new, true);
-        addModuleFactory("motion_multiplier", MotionMultiplierModule::new, true);
+        addModuleFactory("motion_multiplier", MotionMultiplierModule::new, false);
         addModuleFactory("no_falls", NoFallsModule::new, true);
+        addModuleFactory("elytra_flight", ElytraFlightModule::new, true);
 
         // Render
         addModuleFactory("block_highlight", BlockHighlightModule::new, true);
@@ -132,10 +133,10 @@ public class GsonModules implements Modules {
         addModuleFactory("refill", RefillModule::new, true);
         addModuleFactory("silent_close", SilentCloseModule::new, true);
         addModuleFactory("timer", TimerModule::new, true);
-        addModuleFactory("announcer", AnnouncerModule::new, true);
-        addModuleFactory("cleaner", CleanerModule::new, true);
+        addModuleFactory("player_tracker", PlayerTrackerModule::new, true);
+        addModuleFactory("cleaner", CleanerModule::new, false);
         addModuleFactory("pvp_info", PvPInfoModule::new, true);
-        addModuleFactory("spammer_xd", SpammerXDModule::new, true);
+        addModuleFactory("middle_click_exp", MiddleClickEXPModule::new, true);
 
         // World
         addModuleFactory("anti_ghost_block", AntiGhostBlockModule::new, true);

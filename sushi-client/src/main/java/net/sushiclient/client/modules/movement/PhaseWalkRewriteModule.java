@@ -19,8 +19,10 @@
 
 package net.sushiclient.client.modules.movement;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.sushiclient.client.Sushi;
@@ -50,6 +52,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
     private final Configuration<Boolean> shiftLimit;
     private final Configuration<Boolean> voidSafe;
     private final Configuration<IntRange> voidY;
+    private final Configuration<Boolean> sprintMode;
     private boolean suffix;
     private boolean sneakedFlag;
     private boolean jumpedFlag;
@@ -68,6 +71,7 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
         voidSafe = provider.get("void_safe", "Void safe", null, Boolean.class, true);
         voidY = provider.get("void_y", "Void y", null, IntRange.class, new IntRange(60, 65, -1, 1),
                 voidSafe::getValue, false, 0);
+        sprintMode = provider.get("sprint_mode", "Test spring mode", null, Boolean.class, false);
     }
 
     private boolean paused = false;
@@ -88,80 +92,112 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
             speedModulePauseManager(false);
     }
 
+    private void jumpAndSneak() {
+        EntityPlayerSP player = getPlayer();
+
+        if (player.movementInput.sneak) {
+            int underY = (int) player.posY - 1;
+            if (shiftLimit.getValue()) {
+                if (!sneakedFlag) {
+                    if (voidSafe.getValue() && underY <= voidY.getValue().getCurrent()) return;
+                    PositionUtils.move(player.posX, underY, player.posZ, 0, 0, false, PositionMask.POSITION);
+                }
+            } else
+                PositionUtils.move(player.posX, underY, player.posZ, 0, 0, false, PositionMask.POSITION);
+            sneakedFlag = true;
+        } else if (sneakedFlag) {
+            sneakedFlag = false;
+        }
+        if (player.movementInput.jump) {
+            int upY = (int) (player.posY + 1);
+            if (jumpLimit.getValue()) {
+                if (!jumpedFlag)
+                    PositionUtils.move(player.posX, upY, player.posZ, 0, 0, false, PositionMask.POSITION);
+            } else
+                PositionUtils.move(player.posX, upY, player.posZ, 0, 0, false, PositionMask.POSITION);
+            jumpedFlag = true;
+        } else if (jumpedFlag) {
+            jumpedFlag = false;
+        }
+    }
+
     @EventHandler(timing = EventTiming.PRE)
     public void onPlayerTravel(PlayerTravelEvent e) {
         if (EntityUtils.isInsideBlock(getPlayer()) && PlayerUtils.isPlayerInClip()) {
-            if (firstStart) {
-                timer.start();
-                startTime = System.currentTimeMillis();
-                firstStart = false;
+            if (sprintMode.getValue()) {
+                if (firstStart) {
+                    timer.start();
+                    startTime = System.currentTimeMillis();
+                    firstStart = false;
+                }
+                speedModulePauseManager(true);
+
+                suffix = true;
+
+                EntityPlayerSP player = getPlayer();
+                player.fallDistance = 0;
+                player.noClip = true;
+
+                Vec3d input = MovementUtils.getMoveInputs(player);
+
+                player.motionY = 0;
+                if (input.x != 0 || input.z != 0) {
+                    player.setSprinting(true);
+                } else {
+                    player.motionX = 0;
+                    player.motionZ = 0;
+                }
+
+                jumpAndSneak();
+            } else {
+                if (firstStart) {
+                    timer.start();
+                    startTime = System.currentTimeMillis();
+                    firstStart = false;
+                }
+                speedModulePauseManager(true);
+
+                EntityPlayerSP player = getPlayer();
+                if (player.isElytraFlying()) return;
+                Vec3d inputs = MovementUtils.getMoveInputs(player).normalize();
+
+                // chatLog("Input X:" + inputs.x + " Y:" + inputs.y + " Z:" + inputs.z);
+                suffix = true;
+
+                player.motionX = 0;
+                player.motionY = 0;
+                player.motionZ = 0;
+
+                player.noClip = EntityUtils.isInsideBlock(getPlayer());
+                player.fallDistance = 0;
+
+                double x;
+                double z;
+
+                x = inputs.x;
+                z = inputs.z;
+
+                x *= multiplier.getValue().getCurrent();
+                z *= multiplier.getValue().getCurrent();
+                // chatLog("Multiply X:" + x + " Z:" + z);
+
+                if (tpsSync.getValue()) {
+                    double tps = TpsUtils.getTps();
+                    if (capAt20.getValue()) tps = Math.max(20, tps);
+                    tps /= 20;
+
+                    x *= tps;
+                    z *= tps;
+                    // chatLog("Tps sync X:" + x + " Z:" + z);
+                }
+
+                Vec2f vec = MovementUtils.toWorld(new Vec2f((float) x, (float) z), player.rotationYaw);
+                player.motionX = vec.x;
+                player.motionY = 0;
+                player.motionZ = vec.y;
+
+                jumpAndSneak();
             }
-            speedModulePauseManager(true);
-
-            EntityPlayerSP player = getPlayer();
-            if (player.isElytraFlying()) return;
-            Vec3d inputs = MovementUtils.getMoveInputs(player).normalize();
-
-            // chatLog("Input X:" + inputs.x + " Y:" + inputs.y + " Z:" + inputs.z);
-            suffix = true;
-
-            player.motionX = 0;
-            player.motionY = 0;
-            player.motionZ = 0;
-
-            player.noClip = EntityUtils.isInsideBlock(getPlayer());
-            player.fallDistance = 0;
-
-            double x;
-            double z;
-
-            x = inputs.x;
-            z = inputs.z;
-
-            x *= multiplier.getValue().getCurrent();
-            z *= multiplier.getValue().getCurrent();
-            // chatLog("Multiply X:" + x + " Z:" + z);
-
-            if (tpsSync.getValue()) {
-                double tps = TpsUtils.getTps();
-                if (capAt20.getValue()) tps = Math.max(20, tps);
-                tps /= 20;
-
-                x *= tps;
-                z *= tps;
-                // chatLog("Tps sync X:" + x + " Z:" + z);
-            }
-
-            Vec2f vec = MovementUtils.toWorld(new Vec2f((float) x, (float) z), player.rotationYaw);
-            player.motionX = vec.x;
-            player.motionY = 0;
-            player.motionZ = vec.y;
-
-            if (getPlayer().movementInput.sneak) {
-                int underY = (int) player.posY - 1;
-                if (shiftLimit.getValue()) {
-                    if (!sneakedFlag) {
-                        if (voidSafe.getValue() && underY <= voidY.getValue().getCurrent()) return;
-                        PositionUtils.move(player.posX, underY, player.posZ, 0, 0, false, PositionMask.POSITION);
-                    }
-                } else
-                    PositionUtils.move(player.posX, underY, player.posZ, 0, 0, false, PositionMask.POSITION);
-                sneakedFlag = true;
-            } else if (sneakedFlag) {
-                sneakedFlag = false;
-            }
-            if (getPlayer().movementInput.jump) {
-                int upY = (int) (player.posY + 1);
-                if (jumpLimit.getValue()) {
-                    if (!jumpedFlag)
-                        PositionUtils.move(player.posX, upY, player.posZ, 0, 0, false, PositionMask.POSITION);
-                } else
-                    PositionUtils.move(player.posX, upY, player.posZ, 0, 0, false, PositionMask.POSITION);
-                jumpedFlag = true;
-            } else if (jumpedFlag) {
-                jumpedFlag = false;
-            }
-
         } else {
             suffix = false;
             firstStart = true;
@@ -176,10 +212,12 @@ public class PhaseWalkRewriteModule extends BaseModule implements ModuleSuffix {
 
     @Override
     public String getSuffix() {
-        if (suffix && BlockUtils.getBlock(getPlayer().getPosition()) == Blocks.ANVIL)
+        if (suffix && BlockUtils.getBlock(PositionUtils.getBlockPos(getPlayer())) == Blocks.ANVIL) {
+            timer.start();
             return "Enabled [ANVIL]";
-        else
+        } else {
             return suffix ? "Enabled [" + timer.toString() + "]" : "Disabled";
+        }
     }
 
     @Override

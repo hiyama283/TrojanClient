@@ -67,7 +67,7 @@ public class TextRaderComponent extends MultiLineTextElementComponent {
             if (range > rangeGreen.getValue().getCurrent()) rangeText.append(TextFormatting.GREEN);
             else if (range > rangeYellow.getValue().getCurrent()) rangeText.append(TextFormatting.YELLOW);
             else rangeText.append(TextFormatting.RED);
-            rangeText.append(range).append(TextFormatting.WHITE);
+            rangeText.append(range).append("m").append(TextFormatting.WHITE);
 
             double fullHealth = format(playerEntity.getHealth() + playerEntity.getAbsorptionAmount());
             String playerNameFormat;

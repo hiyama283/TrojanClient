@@ -92,7 +92,7 @@ public class MainMenu extends GuiScreen {
     private int animatedX, animatedY;
     private List<CustomButton> buttons;
     private ParticleManager pm;
-    private ISound target;
+    private final ISound target;
 
     public MainMenu() {
         ISound[] sound = new ISound[]{

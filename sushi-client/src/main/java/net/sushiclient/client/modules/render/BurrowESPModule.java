@@ -19,6 +19,7 @@
 
 package net.sushiclient.client.modules.render;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -29,6 +30,7 @@ import net.sushiclient.client.config.Configuration;
 import net.sushiclient.client.config.RootConfigurations;
 import net.sushiclient.client.config.data.EspColor;
 import net.sushiclient.client.events.EventHandler;
+import net.sushiclient.client.events.EventHandlers;
 import net.sushiclient.client.events.EventTiming;
 import net.sushiclient.client.events.tick.ClientTickEvent;
 import net.sushiclient.client.events.world.WorldRenderEvent;
@@ -52,6 +54,43 @@ public class BurrowESPModule extends BaseModule implements ModuleSuffix {
                 new EspColor(new Color(255, 0, 0), false, true));
     }
 
+    public static class BurrowInformation {
+        private final EntityPlayer player;
+        private final BlockPos pos;
+        public BurrowInformation(EntityPlayer player, BlockPos pos) {
+            this.player = player;
+            this.pos = pos;
+        }
+
+        public EntityPlayer getPlayer() {
+            return player;
+        }
+
+        public BlockPos getPos() {
+            return pos;
+        }
+    }
+
+    public static List<BurrowInformation> getBurrowedPlayers() {
+        List<BurrowInformation> target = new ArrayList<>();
+        for (EntityPlayer nearbyPlayer : Minecraft.getMinecraft().world.playerEntities) {
+            BlockPos blockPos = PositionUtils.toBlockPos(nearbyPlayer.getPositionVector());
+            if (PlayerUtils.isPlayerBurrow(nearbyPlayer)) {
+                target.add(new BurrowInformation(nearbyPlayer, blockPos));
+            }
+        }
+        return target;
+    }
+
+    @Override
+    public void onEnable() {
+        EventHandlers.register(this);
+    }
+
+    @Override
+    public void onDisable() {
+        EventHandlers.unregister(this);
+    }
     @EventHandler(timing = EventTiming.POST)
     public void onWorldRender(WorldRenderEvent e) {
         for (BlockPos blockPos : new HashSet<>(target)) {
@@ -64,15 +103,11 @@ public class BurrowESPModule extends BaseModule implements ModuleSuffix {
     @EventHandler(timing = EventTiming.POST)
     public void onClientTick(ClientTickEvent e) {
         target.clear();
-        for (EntityPlayer nearbyPlayer : getWorld().playerEntities) {
-            BlockPos blockPos = PositionUtils.toBlockPos(nearbyPlayer.getPositionVector());
-            GuiLogger.send(blockPos.getX() + ":" + blockPos.getY() + ":" + blockPos.getZ());
-            if (PlayerUtils.isPlayerBurrow(nearbyPlayer)) {
-                synchronized (target) {
-                    target.add(blockPos);
-                }
+        BurrowESPModule.getBurrowedPlayers().forEach(b -> {
+            synchronized (target) {
+                target.add(b.getPos());
             }
-        }
+        });
     }
 
     private AxisAlignedBB getBox(World world, BlockPos origin) {

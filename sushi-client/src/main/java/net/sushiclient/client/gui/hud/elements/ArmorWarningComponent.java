@@ -54,7 +54,8 @@ public class ArmorWarningComponent extends TextElementComponent {
         for (ItemStack item : items) {
             if (!(item.getItem() instanceof ItemArmor)) continue;
             if (item.getMaxDamage() * warnPercent.getValue().getCurrent() < item.getItemDamage()) {
-                String s = TextFormatting.BOLD + TextFormatting.RED.toString() + "Armor low!" + TextFormatting.RESET;
+                String s = TextFormatting.BOLD + TextFormatting.RED.toString() + "Armor is low! Under " +
+                        warnPercent.getValue().getCurrent() * 100 + "%" + TextFormatting.RESET;
 
                 if (!warned) {
                     GuiLogger.send(s);

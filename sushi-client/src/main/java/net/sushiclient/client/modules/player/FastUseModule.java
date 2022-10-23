@@ -95,6 +95,7 @@ public class FastUseModule extends BaseModule {
     }
 
     private boolean passItemCheck(Item item) {
+        if (item == null) return false;
         if (item instanceof ItemAir) return false;
         return blocks ||
                 expBottle && item == Items.EXPERIENCE_BOTTLE ||

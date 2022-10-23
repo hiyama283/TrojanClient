@@ -29,6 +29,7 @@ import net.minecraft.init.Enchantments;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketPlayerDigging;
+import net.minecraft.network.play.client.CPacketPlayerTryUseItem;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -170,19 +171,17 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
     private float mineDamage;
     private BlockPos minePosition;
 
-    private final double END_DAMAGE = 1;
+    private final double END_DAMAGE = 0.95;
     private int beforeSlot;
 
     private void rotateToMinePos() {
-        float[] neededRotations = PositionUtils.getNeededRotations(getPlayer().getPositionVector());
-        PositionUtils.require()
-                .desyncMode(PositionMask.LOOK)
-                .rotation(neededRotations[0], neededRotations[1]);
+       PositionUtils.lookAt(getPlayer().getPositionVector());
     }
 
     @EventHandler(timing = EventTiming.POST)
     public void onClientTick(ClientTickEvent e) {
         BlockPos breakingBlock = BlockUtils.getBreakingBlockPos();
+        if (Objects.isNull(breakingBlock)) return;
         if (BlockUtils.getBlock(breakingBlock) == Blocks.BEDROCK) return;
 
         if (PlayerUtils.getDistance(breakingBlock) >= range.getValue().getCurrent()) {
@@ -233,14 +232,23 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
                         sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, breakingBlock, EnumFacing.DOWN));
                     });
                 }
+
+                if (strictBreak.getValue()) {
+                    sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.ABORT_DESTROY_BLOCK, minePosition, EnumFacing.DOWN));
+                    sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, minePosition, EnumFacing.DOWN));
+                }
             }
         }
 
-        if (resetDamage.getValue() && BlockUtils.isAir(getWorld(), breakingBlock)) {
+        if (resetDamage.getValue() && (BlockUtils.isAir(getWorld(), breakingBlock))) {
             mineDamage = 0;
             abortDig = true;
             sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.ABORT_DESTROY_BLOCK, minePosition, EnumFacing.DOWN));
             sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, minePosition, EnumFacing.DOWN));
+        }
+
+        if (mineDamage >= 1.2) {
+            mineDamage = 0;
         }
 
         float blockStrength = getBlockStrength(getWorld().getBlockState(breakingBlock), breakingBlock);
@@ -298,7 +306,7 @@ public class SpeedMineModule extends BaseModule implements ModuleSuffix {
                 }
             } else {
                 color = unbreakColor.getValue();
-                suffixText = "" + String.valueOf(tmpDamage * 100).split("\\.")[0] + "%";
+                suffixText = String.valueOf(tmpDamage * 100).split("\\.")[0] + "%";
             }
 
             // box of the mine

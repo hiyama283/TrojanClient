@@ -17,20 +17,20 @@
  * limitations under the License.
  */
 
-package net.sushiclient.client.command;
+package net.sushiclient.client.events.player;
 
-import net.sushiclient.client.gui.hud.elements.NotificationComponent;
+import net.minecraft.entity.player.EntityPlayer;
+import net.sushiclient.client.events.BaseEvent;
+import net.sushiclient.client.events.EventTiming;
 
-public final class GuiLogger {
-    public static void send(int id, String message, long length) {
-        NotificationComponent.self.send(id, message, length);
+public class PlayerDeathEvent extends BaseEvent {
+    private final EntityPlayer player;
+    public PlayerDeathEvent(EventTiming timing, boolean async, EntityPlayer player) {
+        super(timing, async);
+        this.player = player;
     }
 
-    public static void send(String message, long length) {
-        send(message.hashCode(), message, length);
-    }
-
-    public static void send(String message) {
-        send(message.hashCode(), message, 2000);
+    public EntityPlayer getPlayer() {
+        return player;
     }
 }

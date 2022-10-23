@@ -39,7 +39,9 @@ public class InputUtils {
         int mouse = Mouse.getEventButton();
         ClickType clickType;
         if (mouse == 0) clickType = ClickType.LEFT;
-        else clickType = ClickType.RIGHT;
+        else if (mouse == 1) clickType = ClickType.RIGHT;
+        else if (mouse == 2) clickType = ClickType.MIDDLE;
+        else return;
         MouseEvent event;
         if (Mouse.isButtonDown(mouse)) event = new MousePressEvent(clickType);
         else event = new MouseReleaseEvent(clickType);
